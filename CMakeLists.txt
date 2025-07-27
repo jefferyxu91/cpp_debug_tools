@@ -33,10 +33,12 @@ endif()
 # Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
 add_executable(nanoflann_monitor_example examples/nanoflann_monitor_example.cpp)
+add_executable(nanoflann_auto_monitor_example examples/nanoflann_auto_monitor_example.cpp)
 
 # Link pthread for the nanoflann monitor (needed for std::thread)
 find_package(Threads REQUIRED)
 target_link_libraries(nanoflann_monitor_example Threads::Threads)
+target_link_libraries(nanoflann_auto_monitor_example Threads::Threads)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -45,6 +47,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
     target_compile_options(nanoflann_monitor_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(nanoflann_auto_monitor_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -70,3 +73,4 @@ if(GTest_FOUND)
 endif()
 message(STATUS "    - memory_debug_example")
 message(STATUS "    - nanoflann_monitor_example")
+message(STATUS "    - nanoflann_auto_monitor_example")
