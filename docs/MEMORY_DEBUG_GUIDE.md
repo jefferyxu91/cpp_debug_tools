@@ -1,6 +1,6 @@
-# Debug Containers Header
+# Memory Debug Containers Guide
 
-A minimalistic C++ header file that provides debugging capabilities for standard library containers with comprehensive memory allocation tracking and ROS integration support.
+A comprehensive guide for using the memory debug containers header that provides debugging capabilities for standard library containers with comprehensive memory allocation tracking and ROS integration support.
 
 ## Features
 

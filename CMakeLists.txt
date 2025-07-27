@@ -45,7 +45,7 @@ install(DIRECTORY include/memory/container_debug/
         DESTINATION include/memory/container_debug/
         FILES_MATCHING PATTERN "*.hpp")
 
-install(FILES docs/README.md docs/ROS_INTEGRATION_GUIDE.md
+install(FILES docs/MEMORY_DEBUG_GUIDE.md docs/ROS_INTEGRATION_GUIDE.md
         DESTINATION share/debug_containers/docs/)
 
 # Print configuration summary

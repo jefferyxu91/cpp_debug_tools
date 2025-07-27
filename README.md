@@ -15,7 +15,7 @@ debug_containers/
 ├── examples/
 │   └── memory_debug_example.cpp        # Memory debug container example
 ├── docs/                               # Documentation
-│   ├── README.md                       # Detailed usage guide
+│   ├── MEMORY_DEBUG_GUIDE.md          # Memory debug usage guide
 │   └── ROS_INTEGRATION_GUIDE.md       # ROS integration guide
 ├── CMakeLists.txt                      # Build configuration
 └── README.md                           # This file
@@ -91,7 +91,7 @@ All standard containers are available with the `Debug::` prefix:
 
 ## Documentation
 
-- [Detailed Usage Guide](docs/README.md) - Complete feature documentation and examples
+- [Memory Debug Guide](docs/MEMORY_DEBUG_GUIDE.md) - Complete memory debug feature documentation and examples
 - [ROS Integration Guide](docs/ROS_INTEGRATION_GUIDE.md) - ROS-specific integration examples
 
 ## Examples
