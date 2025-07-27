@@ -23,21 +23,27 @@ endif()
 # Find ROS if available (optional)
 find_package(rosconsole QUIET)
 
-# Google Test executable (only if GTest is found)
+# Google Test executables (only if GTest is found)
 if(GTest_FOUND)
     add_executable(debug_containers_test test/debug_containers_test.cpp)
     target_link_libraries(debug_containers_test GTest::gtest GTest::gtest_main)
+    
+    add_executable(nanoflann_memory_monitor_test test/nanoflann_memory_monitor_test.cpp)
+    target_link_libraries(nanoflann_memory_monitor_test GTest::gtest GTest::gtest_main)
 endif()
 
-# Example executable
+# Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
+add_executable(nanoflann_memory_monitor_example examples/nanoflann_memory_monitor_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GTest_FOUND)
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
+        target_compile_options(nanoflann_memory_monitor_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(nanoflann_memory_monitor_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -45,7 +51,11 @@ install(DIRECTORY include/memory/container_debug/
         DESTINATION include/memory/container_debug/
         FILES_MATCHING PATTERN "*.hpp")
 
-install(FILES docs/MEMORY_DEBUG_GUIDE.md docs/ROS_INTEGRATION_GUIDE.md
+install(FILES include/memory/nanoflann_memory_monitor.hpp
+        include/memory/nanoflann_memory_monitor_impl.hpp
+        DESTINATION include/memory/)
+
+install(FILES docs/MEMORY_DEBUG_GUIDE.md docs/ROS_INTEGRATION_GUIDE.md docs/NANOFLANN_MEMORY_MONITOR_GUIDE.md
         DESTINATION share/debug_containers/docs/)
 
 # Print configuration summary
@@ -57,5 +67,7 @@ message(STATUS "  ROS Integration: ${rosconsole_FOUND}")
 message(STATUS "  Executables to build:")
 if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
+    message(STATUS "    - nanoflann_memory_monitor_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
+message(STATUS "    - nanoflann_memory_monitor_example")
