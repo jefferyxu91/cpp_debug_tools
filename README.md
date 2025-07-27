@@ -13,7 +13,7 @@ debug_containers/
 ├── test/
 │   └── debug_containers_test.cpp       # Google Test suite
 ├── examples/
-│   └── example.cpp                     # Basic usage example
+│   └── memory_debug_example.cpp        # Memory debug container example
 ├── docs/                               # Documentation
 │   ├── README.md                       # Detailed usage guide
 │   └── ROS_INTEGRATION_GUIDE.md       # ROS integration guide
@@ -49,7 +49,7 @@ make
 ./debug_containers_test
 
 # Run example
-./example
+./memory_debug_example
 
 ### Using the Header
 

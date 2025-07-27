@@ -30,14 +30,14 @@ if(GTest_FOUND)
 endif()
 
 # Example executable
-add_executable(example examples/example.cpp)
+add_executable(memory_debug_example examples/memory_debug_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GTest_FOUND)
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
     endif()
-    target_compile_options(example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -58,4 +58,4 @@ message(STATUS "  Executables to build:")
 if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
 endif()
-message(STATUS "    - example")
+message(STATUS "    - memory_debug_example")

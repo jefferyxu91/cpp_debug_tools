@@ -1,3 +1,15 @@
+/**
+ * Memory Debug Containers Example
+ * 
+ * This example demonstrates how to use the debug containers to track
+ * large memory allocations in C++ standard library containers.
+ * 
+ * Features demonstrated:
+ * - Setting custom memory thresholds
+ * - Automatic detection of large allocations
+ * - Debug output for various container types
+ */
+
 #include <memory/container_debug/debug_containers.hpp>
 #include <iostream>
 
