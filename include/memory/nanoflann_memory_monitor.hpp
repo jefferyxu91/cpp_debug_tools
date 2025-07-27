@@ -14,6 +14,14 @@
 #include <unordered_map>
 #include <mutex>
 
+// Forward declare nanoflann to avoid requiring it in this header
+namespace nanoflann {
+    template<typename Distance, class DatasetAdaptor, int32_t DIM, typename IndexType>
+    class KDTreeSingleIndexAdaptor;
+    
+    struct KDTreeSingleIndexAdaptorParams;
+}
+
 namespace NanoFlannMemory {
 
 // Forward declarations
@@ -28,6 +36,8 @@ struct MonitorConfig {
     bool enable_periodic_reports = true;   // Enable periodic memory reports
     bool enable_threshold_alerts = true;   // Enable threshold-based alerts
     std::string log_file_path = "";        // Empty means stderr only
+    bool auto_print_on_exceed = true;      // Automatically print when threshold exceeded
+    bool print_construction_summary = true; // Print summary after construction
     
     // Callback functions
     std::function<void(size_t, const std::string&)> threshold_callback = nullptr;
@@ -344,6 +354,157 @@ public:
         return report;
     }
 };
+
+} // namespace NanoFlannMemory
+
+// Include nanoflann header after our declarations
+#include <nanoflann.hpp>
+
+namespace NanoFlannMemory {
+
+// Memory-monitored wrapper for nanoflann KDTreeSingleIndexAdaptor
+template <
+    typename Distance, 
+    class DatasetAdaptor, 
+    int32_t DIM = -1,
+    typename IndexType = uint32_t
+>
+class MonitoredKDTreeSingleIndexAdaptor {
+private:
+    using KDTreeType = nanoflann::KDTreeSingleIndexAdaptor<Distance, DatasetAdaptor, DIM, IndexType>;
+    std::unique_ptr<KDTreeType> kdtree_;
+    MemoryMonitor monitor_;
+    size_t memory_before_construction_;
+    size_t memory_after_construction_;
+    
+public:
+    // Type aliases to match nanoflann interface
+    using Dimension = typename KDTreeType::Dimension;
+    using ElementType = typename KDTreeType::ElementType;
+    using DistanceType = typename KDTreeType::DistanceType;
+    using IndexType_t = typename KDTreeType::IndexType;
+    
+    // Constructor that matches nanoflann's interface but adds memory monitoring
+    template <class... Args>
+    explicit MonitoredKDTreeSingleIndexAdaptor(
+        const Dimension dimensionality, 
+        const DatasetAdaptor& inputData,
+        const nanoflann::KDTreeSingleIndexAdaptorParams& params,
+        MonitorConfig monitor_config = MonitorConfig{},
+        Args&&... args)
+        : monitor_(monitor_config) {
+        
+        memory_before_construction_ = monitor_.get_total_process_memory();
+        
+        // Print start message if enabled
+        if (monitor_config.print_construction_summary) {
+            std::cout << "🔍 [NanoFlann Monitor] Starting KD-tree construction with "
+                      << inputData.kdtree_get_point_count() << " points..." << std::endl;
+            std::cout << "   Memory threshold: " << (monitor_config.threshold_bytes / (1024.0 * 1024.0)) << " MB" << std::endl;
+        }
+        
+        // Create the actual KD-tree - this is where the tree building happens
+        kdtree_ = std::make_unique<KDTreeType>(dimensionality, inputData, params, std::forward<Args>(args)...);
+        
+        memory_after_construction_ = monitor_.get_total_process_memory();
+        
+        // Check and report memory usage after construction
+        size_t memory_used = memory_after_construction_ > memory_before_construction_ ? 
+                           memory_after_construction_ - memory_before_construction_ : 0;
+        
+        if (monitor_config.print_construction_summary) {
+            std::cout << "✅ [NanoFlann Monitor] KD-tree construction completed!" << std::endl;
+            std::cout << "   Memory used for construction: " << (memory_used / (1024.0 * 1024.0)) << " MB" << std::endl;
+            std::cout << "   Total process memory: " << (memory_after_construction_ / (1024.0 * 1024.0)) << " MB" << std::endl;
+        }
+        
+        // Check threshold and print alert if exceeded
+        if (monitor_config.auto_print_on_exceed && monitor_.threshold_exceeded()) {
+            std::cout << "⚠️  [NanoFlann Monitor] MEMORY THRESHOLD EXCEEDED!" << std::endl;
+            std::cout << monitor_.generate_report() << std::endl;
+        }
+    }
+    
+    // Constructor without monitor config (uses defaults)
+    explicit MonitoredKDTreeSingleIndexAdaptor(
+        const Dimension dimensionality, 
+        const DatasetAdaptor& inputData,
+        const nanoflann::KDTreeSingleIndexAdaptorParams& params = {})
+        : MonitoredKDTreeSingleIndexAdaptor(dimensionality, inputData, params, MonitorConfig{}) {
+    }
+    
+    // Forward all nanoflann methods to the wrapped instance
+    template<typename ResultSet>
+    bool findNeighbors(ResultSet& result, const ElementType* vec, const nanoflann::SearchParameters& searchParams) const {
+        return kdtree_->findNeighbors(result, vec, searchParams);
+    }
+    
+    template<typename ResultSet>
+    bool findNeighbors(ResultSet& result, const ElementType* vec) const {
+        return kdtree_->findNeighbors(result, vec);
+    }
+    
+    void buildIndex() {
+        kdtree_->buildIndex();
+    }
+    
+    size_t size() const {
+        return kdtree_->size();
+    }
+    
+    size_t veclen() const {
+        return kdtree_->veclen();
+    }
+    
+    // Access the underlying kdtree if needed
+    const KDTreeType& get_kdtree() const {
+        return *kdtree_;
+    }
+    
+    KDTreeType& get_kdtree() {
+        return *kdtree_;
+    }
+    
+    // Memory monitoring specific methods
+    const MemoryMonitor& get_memory_monitor() const {
+        return monitor_;
+    }
+    
+    size_t get_construction_memory_usage() const {
+        return memory_after_construction_ > memory_before_construction_ ? 
+               memory_after_construction_ - memory_before_construction_ : 0;
+    }
+    
+    void print_memory_status() const {
+        std::cout << monitor_.generate_report() << std::endl;
+    }
+    
+    bool memory_threshold_exceeded() const {
+        return monitor_.threshold_exceeded();
+    }
+};
+
+// Convenience type aliases for common use cases
+template<typename T, typename PointCloud>
+using MonitoredKDTree3D = MonitoredKDTreeSingleIndexAdaptor<
+    nanoflann::L2_Simple_Adaptor<T, PointCloud>,
+    PointCloud,
+    3
+>;
+
+template<typename T, typename PointCloud>
+using MonitoredKDTree2D = MonitoredKDTreeSingleIndexAdaptor<
+    nanoflann::L2_Simple_Adaptor<T, PointCloud>,
+    PointCloud,
+    2
+>;
+
+template<typename T, typename PointCloud, int DIM>
+using MonitoredKDTree = MonitoredKDTreeSingleIndexAdaptor<
+    nanoflann::L2_Simple_Adaptor<T, PointCloud>,
+    PointCloud,
+    DIM
+>;
 
 // Convenience macros for easy integration
 #define NANOFLANN_MONITOR_START(threshold_mb) \

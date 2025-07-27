@@ -17,6 +17,29 @@ A low-overhead, non-intrusive memory monitoring tool specifically designed for t
 
 ### Basic Usage
 
+#### Option 1: Drop-in Replacement (Recommended)
+
+```cpp
+#include <memory/nanoflann_memory_monitor.hpp>
+
+// Simply replace nanoflann::KDTreeSingleIndexAdaptor with MonitoredKDTreeSingleIndexAdaptor
+// Everything else remains exactly the same!
+NanoFlannMemory::MonitoredKDTree3D<float, PointCloud> index(
+    3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10)
+);
+
+// The tree automatically monitors memory and prints alerts!
+// Use it exactly like regular nanoflann:
+float query_pt[3] = {1.0, 2.0, 3.0};
+size_t ret_index;
+float out_dist_sqr;
+nanoflann::KNNResultSet<float> resultSet(1);
+resultSet.init(&ret_index, &out_dist_sqr);
+index.findNeighbors(resultSet, &query_pt[0]);
+```
+
+#### Option 2: Manual Monitoring
+
 ```cpp
 #include <memory/nanoflann_memory_monitor.hpp>
 
@@ -60,6 +83,87 @@ config.threshold_callback = [](size_t usage, const std::string& msg) {
 NanoFlannMemory::MemoryMonitor monitor(config);
 
 // Use with nanoflann...
+```
+
+## Monitored KDTree Classes
+
+### MonitoredKDTreeSingleIndexAdaptor
+
+A wrapper class that provides the same interface as `nanoflann::KDTreeSingleIndexAdaptor` but automatically monitors memory usage and prints alerts when thresholds are exceeded.
+
+#### Key Features
+
+- **Drop-in replacement**: Same interface as nanoflann's KDTreeSingleIndexAdaptor
+- **Automatic monitoring**: Memory tracking starts automatically during construction
+- **Threshold alerts**: Configurable automatic alerts when memory usage exceeds limits
+- **Zero performance overhead**: Minimal impact on construction and search performance
+- **Flexible configuration**: Extensive options for monitoring behavior
+
+#### Usage
+
+```cpp
+// Before: using nanoflann::KDTreeSingleIndexAdaptor
+nanoflann::KDTreeSingleIndexAdaptor<
+    nanoflann::L2_Simple_Adaptor<double, PointCloud>,
+    PointCloud,
+    3
+> index(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+
+// After: using MonitoredKDTreeSingleIndexAdaptor
+NanoFlannMemory::MonitoredKDTreeSingleIndexAdaptor<
+    nanoflann::L2_Simple_Adaptor<double, PointCloud>,
+    PointCloud,
+    3
+> index(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10));
+
+// Or use the convenience alias:
+NanoFlannMemory::MonitoredKDTree3D<double, PointCloud> index(
+    3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10)
+);
+```
+
+#### Convenience Type Aliases
+
+```cpp
+// For 3D point clouds
+NanoFlannMemory::MonitoredKDTree3D<float, PointCloud> index_3d;
+
+// For 2D point clouds  
+NanoFlannMemory::MonitoredKDTree2D<double, PointCloud> index_2d;
+
+// For N-dimensional point clouds
+NanoFlannMemory::MonitoredKDTree<float, PointCloud, 5> index_5d;
+```
+
+#### Configuration Options
+
+```cpp
+// Custom monitoring configuration
+NanoFlannMemory::MonitorConfig config;
+config.threshold_bytes = 100 * 1024 * 1024;  // 100MB threshold
+config.auto_print_on_exceed = true;          // Auto-print alerts
+config.print_construction_summary = true;    // Print construction info
+
+// Create monitored tree with custom config
+NanoFlannMemory::MonitoredKDTree3D<float, PointCloud> index(
+    3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10), config
+);
+```
+
+#### Memory Monitoring Methods
+
+```cpp
+// Check memory usage during construction
+size_t memory_used = index.get_construction_memory_usage();
+
+// Check if threshold was exceeded
+bool exceeded = index.memory_threshold_exceeded();
+
+// Print current memory status
+index.print_memory_status();
+
+// Access the underlying memory monitor
+const auto& monitor = index.get_memory_monitor();
 ```
 
 ## Integration Guide

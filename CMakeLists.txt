@@ -32,9 +32,8 @@ endif()
 
 # Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
-add_executable(nanoflann_memory_monitor_example examples/nanoflann_memory_monitor_example.cpp)
-add_executable(real_nanoflann_memory_example examples/real_nanoflann_memory_example.cpp)
 add_executable(simple_integration_example examples/simple_integration_example.cpp)
+add_executable(monitored_kdtree_example examples/monitored_kdtree_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -42,15 +41,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
-    target_compile_options(nanoflann_memory_monitor_example PRIVATE -Wall -Wextra -O2)
-    target_compile_options(real_nanoflann_memory_example PRIVATE -Wall -Wextra -O2)
     target_compile_options(simple_integration_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(monitored_kdtree_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Link pthread for memory monitor examples
-target_link_libraries(nanoflann_memory_monitor_example pthread)
-target_link_libraries(real_nanoflann_memory_example pthread)
 target_link_libraries(simple_integration_example pthread)
+target_link_libraries(monitored_kdtree_example pthread)
 
 # Install rules
 install(DIRECTORY include/memory/container_debug/
@@ -74,6 +71,5 @@ if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
-message(STATUS "    - nanoflann_memory_monitor_example")
-message(STATUS "    - real_nanoflann_memory_example")
 message(STATUS "    - simple_integration_example")
+message(STATUS "    - monitored_kdtree_example")
