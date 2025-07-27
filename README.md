@@ -75,6 +75,7 @@ int main() {
 - **ROS Integration**: Seamless integration with ROS logging
 - **Minimal Overhead**: Zero performance impact when allocations are below threshold
 - **Complete Coverage**: All major std containers supported
+- **Nanoflann Memory Monitor**: Specialized memory monitoring for nanoflann tree building operations
 
 
 ## Available Containers
@@ -93,6 +94,8 @@ All standard containers are available with the `Debug::` prefix:
 
 - [Memory Debug Guide](docs/MEMORY_DEBUG_GUIDE.md) - Complete memory debug feature documentation and examples
 - [ROS Integration Guide](docs/ROS_INTEGRATION_GUIDE.md) - ROS-specific integration examples
+- [Nanoflann Memory Monitor Guide](docs/NANOFLANN_MEMORY_MONITOR_GUIDE.md) - Complete nanoflann memory monitoring documentation
+- [Nanoflann Memory Monitor README](docs/NANOFLANN_MEMORY_MONITOR_README.md) - Quick start guide for nanoflann memory monitoring
 
 ## Examples
 
@@ -102,6 +105,25 @@ The project includes comprehensive examples in the `test/` directory:
 - **Constructor Tests**: Demonstrates constructor-based allocation tracking
 - **Comprehensive Tests**: Shows all container types and features
 - **ROS Integration Tests**: ROS logging integration examples
+
+### Nanoflann Memory Monitor Examples
+
+The project also includes specialized examples for nanoflann memory monitoring:
+
+- **nanoflann_memory_monitor_example**: Basic usage demonstration with simulated tree building
+- **real_nanoflann_memory_example**: Real nanoflann integration with actual tree construction and performance comparison
+
+To run the nanoflann examples:
+
+```bash
+# Build the project
+mkdir build && cd build
+cmake ..
+make
+
+# Run the real nanoflann example
+./real_nanoflann_memory_example
+```
 
 ## Installation
 

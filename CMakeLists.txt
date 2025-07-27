@@ -12,6 +12,7 @@ endif()
 
 # Include directories
 include_directories(include)
+include_directories(thirdparty/nanoflann/include)
 
 # Find GTest (optional)
 find_package(GTest QUIET)
@@ -30,20 +31,26 @@ if(GTest_FOUND)
     
     add_executable(nanoflann_memory_monitor_test test/nanoflann_memory_monitor_test.cpp)
     target_link_libraries(nanoflann_memory_monitor_test GTest::gtest GTest::gtest_main)
+    
+    add_executable(real_nanoflann_memory_test test/real_nanoflann_memory_test.cpp)
+    target_link_libraries(real_nanoflann_memory_test GTest::gtest GTest::gtest_main)
 endif()
 
 # Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
 add_executable(nanoflann_memory_monitor_example examples/nanoflann_memory_monitor_example.cpp)
+add_executable(real_nanoflann_memory_example examples/real_nanoflann_memory_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GTest_FOUND)
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
         target_compile_options(nanoflann_memory_monitor_test PRIVATE -Wall -Wextra -O2)
+        target_compile_options(real_nanoflann_memory_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
     target_compile_options(nanoflann_memory_monitor_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(real_nanoflann_memory_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -68,6 +75,8 @@ message(STATUS "  Executables to build:")
 if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
     message(STATUS "    - nanoflann_memory_monitor_test (Google Test)")
+    message(STATUS "    - real_nanoflann_memory_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
 message(STATUS "    - nanoflann_memory_monitor_example")
+message(STATUS "    - real_nanoflann_memory_example")
