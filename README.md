@@ -1,6 +1,6 @@
 # Debug Containers Header
 
-A minimalistic C++ header file that provides debugging capabilities for standard library containers with comprehensive memory allocation tracking.
+A minimalistic C++ header file that provides debugging capabilities for standard library containers with comprehensive memory allocation tracking and ROS integration support.
 
 ## Features
 
@@ -14,6 +14,8 @@ A minimalistic C++ header file that provides debugging capabilities for standard
 - **Minimalistic Design**: Simple header-only implementation
 - **Namespace Isolation**: All functionality is contained within the `Debug` namespace
 - **Complete Coverage**: Supports all major std library containers
+- **ROS Integration**: Seamless integration with ROS logging systems
+- **Custom Output Streams**: Redirect output to any logging system or file
 
 ## Usage
 
@@ -62,6 +64,43 @@ Debug::set_memory_threshold(1024 * 1024); // 1MB
 size_t threshold = Debug::get_memory_threshold();
 ```
 
+### Custom Output Streams
+
+The debug containers support custom output streams for integration with any logging system:
+
+```cpp
+// Redirect to std::cerr
+Debug::set_output_to_cerr();
+
+// Redirect to file
+std::ofstream log_file("memory.log");
+Debug::set_output_to_file(log_file);
+
+// Custom output function
+Debug::set_output_stream([](const std::string& message) {
+    std::cout << "[CUSTOM] " << message << std::endl;
+});
+```
+
+### ROS Integration
+
+Seamless integration with ROS logging systems:
+
+```cpp
+#include "debug_containers.hpp"
+#include <ros/console.h>
+
+// Basic ROS_WARN_STREAM integration
+Debug::set_output_stream([](const std::string& message) {
+    ROS_WARN_STREAM("[MEMORY_DEBUG] " << message);
+});
+
+// Use debug containers
+Debug::vector<int> my_vector(1000); // Will log to ROS_WARN_STREAM
+```
+
+For detailed ROS integration examples, see [ROS_INTEGRATION_GUIDE.md](ROS_INTEGRATION_GUIDE.md).
+
 ### Available Containers
 
 All standard containers are available with the `Debug::` prefix:
@@ -92,6 +131,12 @@ When a large allocation is detected, you'll see output like:
 [DEBUG] Large allocation detected: 40000 bytes at debug_containers.hpp:287
 ```
 
+With ROS integration:
+```
+[ROS_WARN] [MEMORY_DEBUG] Large allocation detected: 20000 bytes at debug_containers.hpp:89
+[ROS_ERROR] [CRITICAL] Large allocation detected: 40000 bytes at debug_containers.hpp:287
+```
+
 ## Compilation
 
 Simply include the header in your C++ project:
@@ -100,10 +145,27 @@ Simply include the header in your C++ project:
 g++ -std=c++17 example.cpp -o example
 ```
 
+For ROS integration:
+```bash
+g++ -std=c++17 ros_example.cpp -o ros_example
+```
+
 ## Requirements
 
 - C++17 or later
 - Standard library containers
+- For ROS integration: ROS development libraries
+
+## Examples
+
+The repository includes several example files:
+
+- `example.cpp` - Basic usage example
+- `constructor_test.cpp` - Constructor allocation tracking
+- `comprehensive_test.cpp` - All container types
+- `simple_ros_example.cpp` - ROS integration example
+- `ros_integration_example.cpp` - Advanced ROS integration
+- `final_example.cpp` - Comprehensive demonstration
 
 ## Notes
 
@@ -116,3 +178,10 @@ g++ -std=c++17 example.cpp -o example
   - Copy constructors
   - Assignment operators
   - Reserve operations
+- Custom output streams allow integration with any logging system
+- ROS integration provides seamless logging to ROS streams
+
+## Documentation
+
+- [README.md](README.md) - This file, basic usage and features
+- [ROS_INTEGRATION_GUIDE.md](ROS_INTEGRATION_GUIDE.md) - Detailed ROS integration guide

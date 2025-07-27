@@ -14,6 +14,7 @@
 #include <string>
 #include <memory>
 #include <cstddef>
+#include <functional>
 
 namespace Debug {
 
@@ -23,12 +24,53 @@ constexpr size_t DEFAULT_MEMORY_THRESHOLD = 20 * 1024 * 1024; // 20MB
 // Global threshold setting
 inline size_t memory_threshold = DEFAULT_MEMORY_THRESHOLD;
 
+// Global output stream function - defaults to std::cout
+inline std::function<void(const std::string&)> output_stream = [](const std::string& message) {
+    std::cout << message << std::endl;
+};
+
 // Utility function to print allocation info
 inline void print_allocation_info(size_t size, const char* file, int line) {
     if (size > memory_threshold) {
-        std::cout << "[DEBUG] Large allocation detected: " << size << " bytes at " 
-                  << file << ":" << line << std::endl;
+        std::string message = "[DEBUG] Large allocation detected: " + 
+                             std::to_string(size) + " bytes at " + 
+                             std::string(file) + ":" + std::to_string(line);
+        output_stream(message);
     }
+}
+
+// Function to set custom output stream
+inline void set_output_stream(std::function<void(const std::string&)> stream) {
+    output_stream = stream;
+}
+
+// Function to set output to std::cout (default)
+inline void set_output_to_cout() {
+    output_stream = [](const std::string& message) {
+        std::cout << message << std::endl;
+    };
+}
+
+// Function to set output to std::cerr
+inline void set_output_to_cerr() {
+    output_stream = [](const std::string& message) {
+        std::cerr << message << std::endl;
+    };
+}
+
+// Function to set output to a file stream
+inline void set_output_to_file(std::ostream& file_stream) {
+    output_stream = [&file_stream](const std::string& message) {
+        file_stream << message << std::endl;
+    };
+}
+
+// Function to set output to a custom stream (like ROS logging)
+template<typename StreamType>
+inline void set_output_to_stream(StreamType& stream) {
+    output_stream = [&stream](const std::string& message) {
+        stream << message;
+    };
 }
 
 // Custom allocator that tracks allocations

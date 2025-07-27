@@ -1,0 +1,5 @@
+[DEBUG] Large allocation detected: 2800 bytes at debug_containers.hpp:92
+[DEBUG] Large allocation detected: 2800 bytes at debug_containers.hpp:131
+[DEBUG] Large allocation detected: 1501 bytes at debug_containers.hpp:92
+[DEBUG] Large allocation detected: 1500 bytes at debug_containers.hpp:557
+[FILE_LOG] [DEBUG] Large allocation detected: 3200 bytes at debug_containers.hpp:181
