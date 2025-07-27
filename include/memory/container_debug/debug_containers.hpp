@@ -16,6 +16,10 @@
 #include <cstddef>
 #include <functional>
 
+// Macro to capture caller's file and line
+#define DEBUG_CONTAINER_ALLOC(size) \
+    Debug::print_allocation_info(size, __FILE__, __LINE__)
+
 namespace Debug {
 
 // Configuration
@@ -128,19 +132,19 @@ public:
     // Constructor with size - tracks allocation
     explicit vector(size_t count) : base_type(count) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Constructor with size and value - tracks allocation
     vector(size_t count, const T& value) : base_type(count, value) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Copy constructor - tracks allocation if large
     vector(const vector& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -150,7 +154,7 @@ public:
     vector& operator=(const vector& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -164,8 +168,21 @@ public:
     // Reserve method override
     void reserve(size_t new_cap) {
         size_t total_size = new_cap * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(new_cap);
+    }
+    
+    // Resize method override
+    void resize(size_t count) {
+        size_t total_size = count * sizeof(T);
+        DEBUG_CONTAINER_ALLOC(total_size);
+        base_type::resize(count);
+    }
+    
+    void resize(size_t count, const T& value) {
+        size_t total_size = count * sizeof(T);
+        DEBUG_CONTAINER_ALLOC(total_size);
+        base_type::resize(count, value);
     }
 };
 
@@ -178,19 +195,19 @@ public:
     // Constructor with size - tracks allocation
     explicit list(size_t count) : base_type(count) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Constructor with size and value - tracks allocation
     list(size_t count, const T& value) : base_type(count, value) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Copy constructor - tracks allocation if large
     list(const list& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -200,7 +217,7 @@ public:
     list& operator=(const list& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -221,19 +238,19 @@ public:
     // Constructor with size - tracks allocation
     explicit deque(size_t count) : base_type(count) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Constructor with size and value - tracks allocation
     deque(size_t count, const T& value) : base_type(count, value) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Copy constructor - tracks allocation if large
     deque(const deque& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -243,7 +260,7 @@ public:
     deque& operator=(const deque& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -264,7 +281,7 @@ public:
     // Copy constructor - tracks allocation if large
     set(const set& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -274,7 +291,7 @@ public:
     set& operator=(const set& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -295,7 +312,7 @@ public:
     // Copy constructor - tracks allocation if large
     multiset(const multiset& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -305,7 +322,7 @@ public:
     multiset& operator=(const multiset& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -326,7 +343,7 @@ public:
     // Copy constructor - tracks allocation if large
     map(const map& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -336,7 +353,7 @@ public:
     map& operator=(const map& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -357,7 +374,7 @@ public:
     // Copy constructor - tracks allocation if large
     multimap(const multimap& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -367,7 +384,7 @@ public:
     multimap& operator=(const multimap& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -388,7 +405,7 @@ public:
     // Copy constructor - tracks allocation if large
     unordered_set(const unordered_set& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -398,7 +415,7 @@ public:
     unordered_set& operator=(const unordered_set& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -412,7 +429,7 @@ public:
     // Reserve method override
     void reserve(size_t count) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(count);
     }
 };
@@ -426,7 +443,7 @@ public:
     // Copy constructor - tracks allocation if large
     unordered_multiset(const unordered_multiset& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -436,7 +453,7 @@ public:
     unordered_multiset& operator=(const unordered_multiset& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -450,7 +467,7 @@ public:
     // Reserve method override
     void reserve(size_t count) {
         size_t total_size = count * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(count);
     }
 };
@@ -466,7 +483,7 @@ public:
     // Copy constructor - tracks allocation if large
     unordered_map(const unordered_map& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -476,7 +493,7 @@ public:
     unordered_map& operator=(const unordered_map& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -490,7 +507,7 @@ public:
     // Reserve method override
     void reserve(size_t count) {
         size_t total_size = count * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(count);
     }
 };
@@ -506,7 +523,7 @@ public:
     // Copy constructor - tracks allocation if large
     unordered_multimap(const unordered_multimap& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -516,7 +533,7 @@ public:
     unordered_multimap& operator=(const unordered_multimap& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -530,7 +547,7 @@ public:
     // Reserve method override
     void reserve(size_t count) {
         size_t total_size = count * sizeof(std::pair<const Key, Value>);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(count);
     }
 };
@@ -554,13 +571,13 @@ public:
     // Constructor with count - tracks allocation
     explicit string(size_t count, char ch = char()) : base_type(count, ch) {
         size_t total_size = count * sizeof(char);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Copy constructor - tracks allocation if large
     string(const string& other) : base_type(other) {
         size_t total_size = other.size() * sizeof(char);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
     }
     
     // Move constructor
@@ -570,7 +587,7 @@ public:
     string& operator=(const string& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(char);
-            print_allocation_info(total_size, __FILE__, __LINE__);
+            DEBUG_CONTAINER_ALLOC(total_size);
             base_type::operator=(other);
         }
         return *this;
@@ -584,7 +601,7 @@ public:
     // Reserve method override
     void reserve(size_t new_cap) {
         size_t total_size = new_cap * sizeof(char);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        DEBUG_CONTAINER_ALLOC(total_size);
         base_type::reserve(new_cap);
     }
 };

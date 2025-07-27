@@ -188,6 +188,19 @@ test_simple/fast:
 .PHONY : test_simple/fast
 
 #=============================================================================
+# Target rules for targets named test_file_line
+
+# Build rule for target.
+test_file_line: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_file_line
+.PHONY : test_file_line
+
+# fast build rule for target.
+test_file_line/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_file_line.dir/build.make CMakeFiles/test_file_line.dir/build
+.PHONY : test_file_line/fast
+
+#=============================================================================
 # Target rules for targets named test_constructor
 
 # Build rule for target.
@@ -249,6 +262,30 @@ test/basic/example.s: test/basic/example.cpp.s
 test/basic/example.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_basic.dir/build.make CMakeFiles/test_basic.dir/test/basic/example.cpp.s
 .PHONY : test/basic/example.cpp.s
+
+test/basic/file_line_test.o: test/basic/file_line_test.cpp.o
+.PHONY : test/basic/file_line_test.o
+
+# target to build an object file
+test/basic/file_line_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_file_line.dir/build.make CMakeFiles/test_file_line.dir/test/basic/file_line_test.cpp.o
+.PHONY : test/basic/file_line_test.cpp.o
+
+test/basic/file_line_test.i: test/basic/file_line_test.cpp.i
+.PHONY : test/basic/file_line_test.i
+
+# target to preprocess a source file
+test/basic/file_line_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_file_line.dir/build.make CMakeFiles/test_file_line.dir/test/basic/file_line_test.cpp.i
+.PHONY : test/basic/file_line_test.cpp.i
+
+test/basic/file_line_test.s: test/basic/file_line_test.cpp.s
+.PHONY : test/basic/file_line_test.s
+
+# target to generate assembly for a file
+test/basic/file_line_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_file_line.dir/build.make CMakeFiles/test_file_line.dir/test/basic/file_line_test.cpp.s
+.PHONY : test/basic/file_line_test.cpp.s
 
 test/basic/simple_test.o: test/basic/simple_test.cpp.o
 .PHONY : test/basic/simple_test.o
@@ -361,11 +398,15 @@ help:
 	@echo "... test_basic"
 	@echo "... test_comprehensive"
 	@echo "... test_constructor"
+	@echo "... test_file_line"
 	@echo "... test_final"
 	@echo "... test_simple"
 	@echo "... test/basic/example.o"
 	@echo "... test/basic/example.i"
 	@echo "... test/basic/example.s"
+	@echo "... test/basic/file_line_test.o"
+	@echo "... test/basic/file_line_test.i"
+	@echo "... test/basic/file_line_test.s"
 	@echo "... test/basic/simple_test.o"
 	@echo "... test/basic/simple_test.i"
 	@echo "... test/basic/simple_test.s"
