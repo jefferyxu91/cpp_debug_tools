@@ -76,42 +76,424 @@ bool operator!=(const DebugAllocator<T>& lhs, const DebugAllocator<U>& rhs) noex
     return !(lhs == rhs);
 }
 
-// Container wrappers
+// Container wrapper classes that track constructor allocations
 template<typename T>
-using vector = std::vector<T, DebugAllocator<T>>;
+class vector : public std::vector<T, DebugAllocator<T>> {
+public:
+    using base_type = std::vector<T, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Constructor with size - tracks allocation
+    explicit vector(size_t count) : base_type(count) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Constructor with size and value - tracks allocation
+    vector(size_t count, const T& value) : base_type(count, value) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Copy constructor - tracks allocation if large
+    vector(const vector& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    vector(vector&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    vector& operator=(const vector& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    vector& operator=(vector&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t new_cap) {
+        size_t total_size = new_cap * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(new_cap);
+    }
+};
 
 template<typename T>
-using list = std::list<T, DebugAllocator<T>>;
+class list : public std::list<T, DebugAllocator<T>> {
+public:
+    using base_type = std::list<T, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Constructor with size - tracks allocation
+    explicit list(size_t count) : base_type(count) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Constructor with size and value - tracks allocation
+    list(size_t count, const T& value) : base_type(count, value) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Copy constructor - tracks allocation if large
+    list(const list& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    list(list&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    list& operator=(const list& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    list& operator=(list&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename T>
-using deque = std::deque<T, DebugAllocator<T>>;
+class deque : public std::deque<T, DebugAllocator<T>> {
+public:
+    using base_type = std::deque<T, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Constructor with size - tracks allocation
+    explicit deque(size_t count) : base_type(count) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Constructor with size and value - tracks allocation
+    deque(size_t count, const T& value) : base_type(count, value) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Copy constructor - tracks allocation if large
+    deque(const deque& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    deque(deque&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    deque& operator=(const deque& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    deque& operator=(deque&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename T>
-using set = std::set<T, std::less<T>, DebugAllocator<T>>;
+class set : public std::set<T, std::less<T>, DebugAllocator<T>> {
+public:
+    using base_type = std::set<T, std::less<T>, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    set(const set& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    set(set&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    set& operator=(const set& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    set& operator=(set&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename T>
-using multiset = std::multiset<T, std::less<T>, DebugAllocator<T>>;
+class multiset : public std::multiset<T, std::less<T>, DebugAllocator<T>> {
+public:
+    using base_type = std::multiset<T, std::less<T>, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    multiset(const multiset& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    multiset(multiset&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    multiset& operator=(const multiset& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    multiset& operator=(multiset&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename Key, typename Value>
-using map = std::map<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>>;
+class map : public std::map<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>> {
+public:
+    using base_type = std::map<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    map(const map& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    map(map&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    map& operator=(const map& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    map& operator=(map&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename Key, typename Value>
-using multimap = std::multimap<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>>;
+class multimap : public std::multimap<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>> {
+public:
+    using base_type = std::multimap<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    multimap(const multimap& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    multimap(multimap&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    multimap& operator=(const multimap& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    multimap& operator=(multimap&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+};
 
 template<typename T>
-using unordered_set = std::unordered_set<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>>;
+class unordered_set : public std::unordered_set<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>> {
+public:
+    using base_type = std::unordered_set<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    unordered_set(const unordered_set& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    unordered_set(unordered_set&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    unordered_set& operator=(const unordered_set& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    unordered_set& operator=(unordered_set&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t count) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(count);
+    }
+};
 
 template<typename T>
-using unordered_multiset = std::unordered_multiset<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>>;
+class unordered_multiset : public std::unordered_multiset<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>> {
+public:
+    using base_type = std::unordered_multiset<T, std::hash<T>, std::equal_to<T>, DebugAllocator<T>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    unordered_multiset(const unordered_multiset& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    unordered_multiset(unordered_multiset&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    unordered_multiset& operator=(const unordered_multiset& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(T);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    unordered_multiset& operator=(unordered_multiset&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t count) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(count);
+    }
+};
 
 template<typename Key, typename Value>
-using unordered_map = std::unordered_map<Key, Value, std::hash<Key>, std::equal_to<Key>, 
+class unordered_map : public std::unordered_map<Key, Value, std::hash<Key>, std::equal_to<Key>, 
+                                               DebugAllocator<std::pair<const Key, Value>>> {
+public:
+    using base_type = std::unordered_map<Key, Value, std::hash<Key>, std::equal_to<Key>, 
                                         DebugAllocator<std::pair<const Key, Value>>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    unordered_map(const unordered_map& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    unordered_map(unordered_map&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    unordered_map& operator=(const unordered_map& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    unordered_map& operator=(unordered_map&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t count) {
+        size_t total_size = count * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(count);
+    }
+};
 
 template<typename Key, typename Value>
-using unordered_multimap = std::unordered_multimap<Key, Value, std::hash<Key>, std::equal_to<Key>, 
-                                                  DebugAllocator<std::pair<const Key, Value>>>;
+class unordered_multimap : public std::unordered_multimap<Key, Value, std::hash<Key>, std::equal_to<Key>, 
+                                                        DebugAllocator<std::pair<const Key, Value>>> {
+public:
+    using base_type = std::unordered_multimap<Key, Value, std::hash<Key>, std::equal_to<Key>, 
+                                             DebugAllocator<std::pair<const Key, Value>>>;
+    using base_type::base_type;
+    
+    // Copy constructor - tracks allocation if large
+    unordered_multimap(const unordered_multimap& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    unordered_multimap(unordered_multimap&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    unordered_multimap& operator=(const unordered_multimap& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    unordered_multimap& operator=(unordered_multimap&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t count) {
+        size_t total_size = count * sizeof(std::pair<const Key, Value>);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(count);
+    }
+};
 
+// Container adaptors
 template<typename T>
 using stack = std::stack<T, deque<T>>;
 
@@ -122,7 +504,48 @@ template<typename T>
 using priority_queue = std::priority_queue<T, vector<T>>;
 
 // String wrapper
-using string = std::basic_string<char, std::char_traits<char>, DebugAllocator<char>>;
+class string : public std::basic_string<char, std::char_traits<char>, DebugAllocator<char>> {
+public:
+    using base_type = std::basic_string<char, std::char_traits<char>, DebugAllocator<char>>;
+    using base_type::base_type;
+    
+    // Constructor with count - tracks allocation
+    explicit string(size_t count, char ch = char()) : base_type(count, ch) {
+        size_t total_size = count * sizeof(char);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Copy constructor - tracks allocation if large
+    string(const string& other) : base_type(other) {
+        size_t total_size = other.size() * sizeof(char);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+    }
+    
+    // Move constructor
+    string(string&& other) noexcept : base_type(std::move(other)) {}
+    
+    // Assignment operators
+    string& operator=(const string& other) {
+        if (this != &other) {
+            size_t total_size = other.size() * sizeof(char);
+            print_allocation_info(total_size, __FILE__, __LINE__);
+            base_type::operator=(other);
+        }
+        return *this;
+    }
+    
+    string& operator=(string&& other) noexcept {
+        base_type::operator=(std::move(other));
+        return *this;
+    }
+    
+    // Reserve method override
+    void reserve(size_t new_cap) {
+        size_t total_size = new_cap * sizeof(char);
+        print_allocation_info(total_size, __FILE__, __LINE__);
+        base_type::reserve(new_cap);
+    }
+};
 
 // Function to set memory threshold
 inline void set_memory_threshold(size_t threshold) {

@@ -1,11 +1,16 @@
 # Debug Containers Header
 
-A minimalistic C++ header file that provides debugging capabilities for standard library containers with memory allocation tracking.
+A minimalistic C++ header file that provides debugging capabilities for standard library containers with comprehensive memory allocation tracking.
 
 ## Features
 
-- **Memory Allocation Tracking**: Detects when containers allocate memory larger than a specified threshold
-- **File and Line Information**: Prints the exact file and line number where large allocations occur
+- **Comprehensive Memory Allocation Tracking**: Detects when containers allocate memory larger than a specified threshold
+  - **Constructor Allocations**: Tracks allocations made during object construction
+  - **Copy Constructor Allocations**: Tracks allocations during copy operations
+  - **Assignment Operator Allocations**: Tracks allocations during assignment operations
+  - **Reserve Method Allocations**: Tracks explicit capacity reservations
+  - **Runtime Allocations**: Tracks all other memory allocations
+- **File and Line Information**: Prints the exact file name and line number where large allocations occur
 - **Minimalistic Design**: Simple header-only implementation
 - **Namespace Isolation**: All functionality is contained within the `Debug` namespace
 - **Complete Coverage**: Supports all major std library containers
@@ -26,6 +31,25 @@ int main() {
     
     return 0;
 }
+```
+
+### Constructor-Based Allocations
+
+The debug containers now track allocations made during construction:
+
+```cpp
+// Constructor with size - tracks allocation
+Debug::vector<int> vec(5000); // Will trigger debug output if > threshold
+
+// Constructor with size and value - tracks allocation
+Debug::vector<int> vec2(3000, 42); // Will trigger debug output if > threshold
+
+// Copy constructor - tracks allocation
+Debug::vector<int> vec3 = vec; // Will trigger debug output if > threshold
+
+// Assignment operator - tracks allocation
+Debug::vector<int> vec4;
+vec4 = vec2; // Will trigger debug output if > threshold
 ```
 
 ### Setting Memory Threshold
@@ -63,7 +87,9 @@ All standard containers are available with the `Debug::` prefix:
 When a large allocation is detected, you'll see output like:
 
 ```
-[DEBUG] Large allocation detected: 2097152 bytes at example.cpp:15
+[DEBUG] Large allocation detected: 20000 bytes at debug_containers.hpp:89
+[DEBUG] Large allocation detected: 12000 bytes at debug_containers.hpp:95
+[DEBUG] Large allocation detected: 40000 bytes at debug_containers.hpp:287
 ```
 
 ## Compilation
@@ -81,7 +107,12 @@ g++ -std=c++17 example.cpp -o example
 
 ## Notes
 
-- The debug allocator wraps the standard allocator and adds tracking functionality
+- The debug containers inherit from std containers and add tracking functionality
 - All containers maintain the same interface as their std counterparts
 - Performance overhead is minimal when allocations are below the threshold
 - The threshold can be changed at runtime using `set_memory_threshold()`
+- Constructor-based allocations are now fully tracked, including:
+  - Size-based constructors
+  - Copy constructors
+  - Assignment operators
+  - Reserve operations
