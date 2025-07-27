@@ -11,18 +11,9 @@ debug_containers/
 │       └── container_debug/
 │           └── debug_containers.hpp    # Main header file
 ├── test/
-│   ├── basic/                          # Basic functionality tests
-│   │   ├── example.cpp
-│   │   └── simple_test.cpp
-│   ├── constructor/                    # Constructor allocation tests
-│   │   └── constructor_test.cpp
-│   ├── comprehensive/                  # Comprehensive tests
-│   │   ├── comprehensive_test.cpp
-│   │   └── final_example.cpp
-│   └── ros_integration/                # ROS integration tests
-│       ├── simple_ros_example.cpp
-│       ├── ros_integration_example.cpp
-│       └── real_ros_example.cpp
+│   └── debug_containers_test.cpp       # Google Test suite
+├── examples/
+│   └── example.cpp                     # Basic usage example
 ├── docs/                               # Documentation
 │   ├── README.md                       # Detailed usage guide
 │   └── ROS_INTEGRATION_GUIDE.md       # ROS integration guide
@@ -36,7 +27,8 @@ debug_containers/
 
 - C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
 - CMake 3.10 or later
-- Optional: ROS development libraries for ROS integration tests
+- Google Test (GTest) - optional, for running tests
+- Optional: ROS development libraries for ROS integration
 
 ### Building
 
@@ -53,17 +45,11 @@ cd build
 cmake ..
 make
 
-# Run tests
-./test_basic
-./test_simple
-./test_constructor
-./test_comprehensive
-./test_final
+# Run tests (if GTest is available)
+./debug_containers_test
 
-# If ROS is available, also run ROS tests
-./test_ros_simple
-./test_ros_integration
-```
+# Run example
+./example
 
 ### Using the Header
 

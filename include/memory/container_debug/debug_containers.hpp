@@ -52,6 +52,10 @@ public:
         using other = SimpleAllocator<U>;
     };
 
+    SimpleAllocator() = default;
+    template<typename U>
+    SimpleAllocator(const SimpleAllocator<U>&) noexcept {}
+
     T* allocate(size_t n) {
         size_t bytes = n * sizeof(T);
         
@@ -69,6 +73,16 @@ public:
         std::free(ptr);
     }
 };
+
+template<typename T, typename U>
+bool operator==(const SimpleAllocator<T>&, const SimpleAllocator<U>&) noexcept {
+    return true;
+}
+
+template<typename T, typename U>
+bool operator!=(const SimpleAllocator<T>& lhs, const SimpleAllocator<U>& rhs) noexcept {
+    return !(lhs == rhs);
+}
 
 // Macro for container allocations - automatically captures file and line
 #define DEBUG_ALLOC(size) \
