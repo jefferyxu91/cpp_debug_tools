@@ -91,13 +91,18 @@ private:
             if (rss > peak_rss_) {
                 peak_rss_ = rss;
             }
+            const std::size_t diff = rss > baseline_rss_ ? (rss - baseline_rss_) : 0;
+            if (!exceeded_.load(std::memory_order_relaxed) && diff > threshold_) {
+                exceeded_.store(true, std::memory_order_relaxed);
+                callback_(diff);
+            }
             std::this_thread::sleep_for(period_);
         }
     }
 
     void reportIfExceeded() const {
         const std::size_t diff = peak_rss_ - baseline_rss_;
-        if (diff > threshold_) {
+        if (!exceeded_ && diff > threshold_) {
             callback_(diff);
         }
     }
@@ -123,6 +128,7 @@ private:
     const std::size_t baseline_rss_;
     std::size_t peak_rss_;
 
+    std::atomic<bool> exceeded_{false};
     std::atomic<bool> running_;
     std::thread watcher_thread_;
 };
