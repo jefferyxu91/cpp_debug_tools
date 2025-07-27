@@ -15,8 +15,7 @@
 #include <random>
 #include <chrono>
 
-// Uncomment this when you have nanoflann installed
-// #include "nanoflann.hpp"
+#include "nanoflann.hpp"
 
 // For demonstration purposes, we'll simulate a KD-tree build operation
 void simulate_kdtree_build(size_t num_points, size_t dimensions) {
@@ -125,8 +124,7 @@ void example_custom_logger() {
     monitor.stop();
 }
 
-// Real nanoflann example (uncomment when nanoflann is available)
-/*
+// Real nanoflann example
 template <typename T>
 struct PointCloud {
     std::vector<T> pts;
@@ -180,7 +178,6 @@ void example_real_nanoflann() {
         std::cout << "KD-tree built with " << num_points << " points" << std::endl;
     }
 }
-*/
 
 int main() {
     std::cout << "Nanoflann Memory Monitor Examples" << std::endl;
@@ -192,8 +189,7 @@ int main() {
     example_oneshot_measurement();
     example_custom_logger();
     
-    // Uncomment when nanoflann is available
-    // example_real_nanoflann();
+    example_real_nanoflann();
     
     std::cout << "\nAll examples completed!" << std::endl;
     

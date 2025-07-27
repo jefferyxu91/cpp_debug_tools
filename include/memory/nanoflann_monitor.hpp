@@ -247,15 +247,16 @@ class ScopedMemoryMonitor {
 private:
     MemoryMonitor monitor_;
     std::string scope_name_;
+    MonitorConfig config_;
     
 public:
     ScopedMemoryMonitor(const std::string& scope_name, 
                        const MonitorConfig& config = MonitorConfig{})
-        : monitor_(config), scope_name_(scope_name) {
+        : monitor_(config), scope_name_(scope_name), config_(config) {
         
-        if (config.custom_logger) {
-            config.custom_logger("[NANOFLANN MONITOR] Entering scope: " + scope_name);
-        } else if (config.print_to_stderr) {
+        if (config_.custom_logger) {
+            config_.custom_logger("[NANOFLANN MONITOR] Entering scope: " + scope_name);
+        } else if (config_.print_to_stderr) {
             std::cerr << "[NANOFLANN MONITOR] Entering scope: " << scope_name << std::endl;
         }
         
@@ -265,10 +266,9 @@ public:
     ~ScopedMemoryMonitor() {
         monitor_.stop();
         
-        auto& config = monitor_.config_;
-        if (config.custom_logger) {
-            config.custom_logger("[NANOFLANN MONITOR] Exiting scope: " + scope_name_);
-        } else if (config.print_to_stderr) {
+        if (config_.custom_logger) {
+            config_.custom_logger("[NANOFLANN MONITOR] Exiting scope: " + scope_name_);
+        } else if (config_.print_to_stderr) {
             std::cerr << "[NANOFLANN MONITOR] Exiting scope: " << scope_name_ << std::endl;
         }
     }
