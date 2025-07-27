@@ -29,8 +29,13 @@ if(GTest_FOUND)
     target_link_libraries(debug_containers_test GTest::gtest GTest::gtest_main)
 endif()
 
-# Example executable
+# Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
+add_executable(nanoflann_monitor_example examples/nanoflann_monitor_example.cpp)
+
+# Link pthread for the nanoflann monitor (needed for std::thread)
+find_package(Threads REQUIRED)
+target_link_libraries(nanoflann_monitor_example Threads::Threads)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -38,12 +43,16 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(nanoflann_monitor_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
 install(DIRECTORY include/memory/container_debug/
         DESTINATION include/memory/container_debug/
         FILES_MATCHING PATTERN "*.hpp")
+
+install(FILES include/memory/nanoflann_monitor.hpp
+        DESTINATION include/memory/)
 
 install(FILES docs/MEMORY_DEBUG_GUIDE.md docs/ROS_INTEGRATION_GUIDE.md
         DESTINATION share/debug_containers/docs/)
@@ -59,3 +68,4 @@ if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
+message(STATUS "    - nanoflann_monitor_example")
