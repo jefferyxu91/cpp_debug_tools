@@ -214,6 +214,19 @@ test_function_name/fast:
 .PHONY : test_function_name/fast
 
 #=============================================================================
+# Target rules for targets named test_caller_context
+
+# Build rule for target.
+test_caller_context: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_caller_context
+.PHONY : test_caller_context
+
+# fast build rule for target.
+test_caller_context/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_caller_context.dir/build.make CMakeFiles/test_caller_context.dir/build
+.PHONY : test_caller_context/fast
+
+#=============================================================================
 # Target rules for targets named test_constructor
 
 # Build rule for target.
@@ -251,6 +264,30 @@ test_final: cmake_check_build_system
 test_final/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_final.dir/build.make CMakeFiles/test_final.dir/build
 .PHONY : test_final/fast
+
+test/basic/caller_context_test.o: test/basic/caller_context_test.cpp.o
+.PHONY : test/basic/caller_context_test.o
+
+# target to build an object file
+test/basic/caller_context_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_caller_context.dir/build.make CMakeFiles/test_caller_context.dir/test/basic/caller_context_test.cpp.o
+.PHONY : test/basic/caller_context_test.cpp.o
+
+test/basic/caller_context_test.i: test/basic/caller_context_test.cpp.i
+.PHONY : test/basic/caller_context_test.i
+
+# target to preprocess a source file
+test/basic/caller_context_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_caller_context.dir/build.make CMakeFiles/test_caller_context.dir/test/basic/caller_context_test.cpp.i
+.PHONY : test/basic/caller_context_test.cpp.i
+
+test/basic/caller_context_test.s: test/basic/caller_context_test.cpp.s
+.PHONY : test/basic/caller_context_test.s
+
+# target to generate assembly for a file
+test/basic/caller_context_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_caller_context.dir/build.make CMakeFiles/test_caller_context.dir/test/basic/caller_context_test.cpp.s
+.PHONY : test/basic/caller_context_test.cpp.s
 
 test/basic/example.o: test/basic/example.cpp.o
 .PHONY : test/basic/example.o
@@ -433,12 +470,16 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test_basic"
+	@echo "... test_caller_context"
 	@echo "... test_comprehensive"
 	@echo "... test_constructor"
 	@echo "... test_file_line"
 	@echo "... test_final"
 	@echo "... test_function_name"
 	@echo "... test_simple"
+	@echo "... test/basic/caller_context_test.o"
+	@echo "... test/basic/caller_context_test.i"
+	@echo "... test/basic/caller_context_test.s"
 	@echo "... test/basic/example.o"
 	@echo "... test/basic/example.i"
 	@echo "... test/basic/example.s"

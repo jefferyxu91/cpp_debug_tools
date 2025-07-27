@@ -20,6 +20,43 @@
 #define DEBUG_CONTAINER_ALLOC(size) \
     Debug::print_allocation_info(size, __FILE__, __LINE__, __FUNCTION__)
 
+// Macro for container instantiation that captures caller context
+#define DEBUG_VECTOR(type, name) \
+    Debug::vector<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_STRING(name) \
+    Debug::string name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_MAP(key_type, value_type, name) \
+    Debug::map<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_LIST(type, name) \
+    Debug::list<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_DEQUE(type, name) \
+    Debug::deque<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_SET(type, name) \
+    Debug::set<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_MULTISET(type, name) \
+    Debug::multiset<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_MULTIMAP(key_type, value_type, name) \
+    Debug::multimap<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_UNORDERED_SET(type, name) \
+    Debug::unordered_set<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_UNORDERED_MULTISET(type, name) \
+    Debug::unordered_multiset<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_UNORDERED_MAP(key_type, value_type, name) \
+    Debug::unordered_map<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_UNORDERED_MULTIMAP(key_type, value_type, name) \
+    Debug::unordered_multimap<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
+
 namespace Debug {
 
 // Configuration
@@ -128,7 +165,20 @@ template<typename T>
 class vector : public std::vector<T, DebugAllocator<T>> {
 public:
     using base_type = std::vector<T, DebugAllocator<T>>;
-    using base_type::base_type;
+    
+    // Default constructor
+    vector() : base_type() {}
+    
+    // Constructor with caller context
+    vector(const char* file, int line, const char* function) 
+        : base_type(), caller_file_(file), caller_line_(line), caller_function_(function) {}
+    
+    // Constructor with size and caller context
+    vector(size_t count, const char* file, int line, const char* function) 
+        : base_type(count), caller_file_(file), caller_line_(line), caller_function_(function) {
+        size_t total_size = count * sizeof(T);
+        print_allocation_info(total_size, file, line, function);
+    }
     
     // Constructor with size - tracks allocation
     explicit vector(size_t count) : base_type(count) {
@@ -139,29 +189,49 @@ public:
     // Constructor with size and value - tracks allocation
     vector(size_t count, const T& value) : base_type(count, value) {
         size_t total_size = count * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
     }
     
     // Copy constructor - tracks allocation if large
-    vector(const vector& other) : base_type(other) {
+    vector(const vector& other) : base_type(other), 
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {
         size_t total_size = other.size() * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
     }
     
     // Move constructor
-    vector(vector&& other) noexcept : base_type(std::move(other)) {}
+    vector(vector&& other) noexcept : base_type(std::move(other)),
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {}
     
     // Assignment operators
     vector& operator=(const vector& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(T);
-            DEBUG_CONTAINER_ALLOC(total_size);
+            if (caller_file_) {
+                print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+            } else {
+                DEBUG_CONTAINER_ALLOC(total_size);
+            }
+            caller_file_ = other.caller_file_;
+            caller_line_ = other.caller_line_;
+            caller_function_ = other.caller_function_;
             base_type::operator=(other);
         }
         return *this;
     }
     
     vector& operator=(vector&& other) noexcept {
+        caller_file_ = other.caller_file_;
+        caller_line_ = other.caller_line_;
+        caller_function_ = other.caller_function_;
         base_type::operator=(std::move(other));
         return *this;
     }
@@ -169,22 +239,39 @@ public:
     // Reserve method override
     void reserve(size_t new_cap) {
         size_t total_size = new_cap * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
         base_type::reserve(new_cap);
     }
     
     // Resize method override
     void resize(size_t count) {
         size_t total_size = count * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
         base_type::resize(count);
     }
     
     void resize(size_t count, const T& value) {
         size_t total_size = count * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
         base_type::resize(count, value);
     }
+
+private:
+    const char* caller_file_ = nullptr;
+    int caller_line_ = 0;
+    const char* caller_function_ = nullptr;
 };
 
 template<typename T>
@@ -339,31 +426,58 @@ template<typename Key, typename Value>
 class map : public std::map<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>> {
 public:
     using base_type = std::map<Key, Value, std::less<Key>, DebugAllocator<std::pair<const Key, Value>>>;
-    using base_type::base_type;
+    
+    // Default constructor
+    map() : base_type() {}
+    
+    // Constructor with caller context
+    map(const char* file, int line, const char* function) 
+        : base_type(), caller_file_(file), caller_line_(line), caller_function_(function) {}
     
     // Copy constructor - tracks allocation if large
-    map(const map& other) : base_type(other) {
+    map(const map& other) : base_type(other), 
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {
         size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
     }
     
     // Move constructor
-    map(map&& other) noexcept : base_type(std::move(other)) {}
+    map(map&& other) noexcept : base_type(std::move(other)),
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {}
     
     // Assignment operators
     map& operator=(const map& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(std::pair<const Key, Value>);
-            DEBUG_CONTAINER_ALLOC(total_size);
+            if (caller_file_) {
+                print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+            } else {
+                DEBUG_CONTAINER_ALLOC(total_size);
+            }
+            caller_file_ = other.caller_file_;
+            caller_line_ = other.caller_line_;
+            caller_function_ = other.caller_function_;
             base_type::operator=(other);
         }
         return *this;
     }
     
     map& operator=(map&& other) noexcept {
+        caller_file_ = other.caller_file_;
+        caller_line_ = other.caller_line_;
+        caller_function_ = other.caller_function_;
         base_type::operator=(std::move(other));
         return *this;
     }
+
+private:
+    const char* caller_file_ = nullptr;
+    int caller_line_ = 0;
+    const char* caller_function_ = nullptr;
 };
 
 template<typename Key, typename Value>
@@ -567,7 +681,20 @@ using priority_queue = std::priority_queue<T, vector<T>>;
 class string : public std::basic_string<char, std::char_traits<char>, DebugAllocator<char>> {
 public:
     using base_type = std::basic_string<char, std::char_traits<char>, DebugAllocator<char>>;
-    using base_type::base_type;
+    
+    // Default constructor
+    string() : base_type() {}
+    
+    // Constructor with caller context
+    string(const char* file, int line, const char* function) 
+        : base_type(), caller_file_(file), caller_line_(line), caller_function_(function) {}
+    
+    // Constructor with count and caller context
+    string(size_t count, char ch, const char* file, int line, const char* function) 
+        : base_type(count, ch), caller_file_(file), caller_line_(line), caller_function_(function) {
+        size_t total_size = count * sizeof(char);
+        print_allocation_info(total_size, file, line, function);
+    }
     
     // Constructor with count - tracks allocation
     explicit string(size_t count, char ch = char()) : base_type(count, ch) {
@@ -576,25 +703,41 @@ public:
     }
     
     // Copy constructor - tracks allocation if large
-    string(const string& other) : base_type(other) {
+    string(const string& other) : base_type(other), 
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {
         size_t total_size = other.size() * sizeof(char);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
     }
     
     // Move constructor
-    string(string&& other) noexcept : base_type(std::move(other)) {}
+    string(string&& other) noexcept : base_type(std::move(other)),
+        caller_file_(other.caller_file_), caller_line_(other.caller_line_), caller_function_(other.caller_function_) {}
     
     // Assignment operators
     string& operator=(const string& other) {
         if (this != &other) {
             size_t total_size = other.size() * sizeof(char);
-            DEBUG_CONTAINER_ALLOC(total_size);
+            if (caller_file_) {
+                print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+            } else {
+                DEBUG_CONTAINER_ALLOC(total_size);
+            }
+            caller_file_ = other.caller_file_;
+            caller_line_ = other.caller_line_;
+            caller_function_ = other.caller_function_;
             base_type::operator=(other);
         }
         return *this;
     }
     
     string& operator=(string&& other) noexcept {
+        caller_file_ = other.caller_file_;
+        caller_line_ = other.caller_line_;
+        caller_function_ = other.caller_function_;
         base_type::operator=(std::move(other));
         return *this;
     }
@@ -602,9 +745,18 @@ public:
     // Reserve method override
     void reserve(size_t new_cap) {
         size_t total_size = new_cap * sizeof(char);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (caller_file_) {
+            print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
         base_type::reserve(new_cap);
     }
+
+private:
+    const char* caller_file_ = nullptr;
+    int caller_line_ = 0;
+    const char* caller_function_ = nullptr;
 };
 
 // Function to set memory threshold
