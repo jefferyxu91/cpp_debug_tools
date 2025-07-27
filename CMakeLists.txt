@@ -28,6 +28,9 @@ find_package(rosconsole QUIET)
 if(GTest_FOUND)
     add_executable(debug_containers_test test/debug_containers_test.cpp)
     target_link_libraries(debug_containers_test GTest::gtest GTest::gtest_main)
+
+    add_executable(watcher_test test/nanoflann_watcher_test.cpp)
+    target_link_libraries(watcher_test GTest::gtest GTest::gtest_main)
 endif()
 
 # Example executable
@@ -60,6 +63,7 @@ message(STATUS "  ROS Integration: ${rosconsole_FOUND}")
 message(STATUS "  Executables to build:")
 if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
+    message(STATUS "    - watcher_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
 message(STATUS "    - nanoflann_memory_watch_example")
