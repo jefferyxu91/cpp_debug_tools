@@ -79,6 +79,8 @@ $ make && make test
 
 ![nanoflann-demo-1](https://user-images.githubusercontent.com/5497818/201550433-d561c5a9-4e87-453d-9cf8-8202d7876235.gif)
 
+
+
 ### 1.4. Why a fork?
 
   * **Execution time efficiency**:
@@ -92,91 +94,176 @@ $ make && make test
 
 Refer to the examples below or to the C++ API of [nanoflann::KDTreeSingleIndexAdaptor<>](https://jlblancoc.github.io/nanoflann/classnanoflann_1_1KDTreeSingleIndexAdaptor.html) for more info.
 
+
 ### 1.5. What can *nanoflann* do?
 
   * Building KD-trees with a single index (no randomized KD-trees, no approximate searches).
+  * Fast, thread-safe querying for closest neighbors on KD-trees. The entry points are:
+    * [nanoflann::KDTreeSingleIndexAdaptor<>](https://jlblancoc.github.io/nanoflann/classnanoflann_1_1KDTreeSingleIndexAdaptor.html)`::knnSearch()`
+      * Finds the `num_closest` nearest neighbors to `query_point[0:dim-1]`. Their indices are stored inside the result object. See an [example usage code](https://github.com/jlblancoc/nanoflann/blob/master/examples/pointcloud_kdd_radius.cpp#L119).
+    * [nanoflann::KDTreeSingleIndexAdaptor<>](https://jlblancoc.github.io/nanoflann/classnanoflann_1_1KDTreeSingleIndexAdaptor.html)`::radiusSearch()`
+      * Finds all the neighbors to `query_point[0:dim-1]` within a maximum radius. The output is given as a vector of pairs, of which the first element is a point index and the second the corresponding distance. See an [example usage code](https://github.com/jlblancoc/nanoflann/blob/master/examples/pointcloud_kdd_radius.cpp#L141).
+    * [nanoflann::KDTreeSingleIndexAdaptor<>](https://jlblancoc.github.io/nanoflann/classnanoflann_1_1KDTreeSingleIndexAdaptor.html)`::radiusSearchCustomCallback()`
+	  * Can be used to receive a callback for each point found in range. This may be more efficient in some situations instead of building a huge vector of pairs with the results.
+  * Working with 2D and 3D point clouds or N-dimensional data sets.
+  * Working directly with `Eigen::Matrix<>` classes (matrices and vectors-of-vectors).
+  * Working with dynamic point clouds without a need to rebuild entire kd-tree index.
+  * Working with the distance metrics:
+    * `R^N`: Euclidean spaces:
+      * `L1` (Manhattan)
+      * `L2` (**squared** Euclidean norm, favoring SSE2 optimization).
+      * `L2_Simple` (**squared** Euclidean norm, for low-dimensionality data sets like point clouds).
+    * `SO(2)`: 2D rotational group
+      * `metric_SO2`: Absolute angular diference.
+    * `SO(3)`: 3D rotational group (better suppport to be provided in future releases)
+      * `metric_SO3`: Inner product between quaternions.
+  * Saves and load the built indices to disk.
+  * GUI based support for benchmarking multiple kd-tree libraries namely nanoflann, flann, fastann and libkdtree.
 
-## Memory Monitor Extension
+### 1.6. What can't *nanoflann* do?
 
-This repository includes a memory-monitored extension for nanoflann that can interrupt the build index process when memory usage exceeds a predefined threshold.
+  * Use other distance metrics apart from L1, L2, SO2 and SO3.
+  * Support for SE(3) groups.
+  * Only the C++ interface exists: there is no support for C, MATLAB or Python.
+  * There is no automatic algorithm configuration (as described in the original Muja & Lowe's paper).
 
-### Memory Monitor Features
+### 1.7. Use in your project via CMake
 
-- **Memory Monitoring**: Real-time memory usage tracking during KD-tree construction
-- **Configurable Thresholds**: Set custom memory limits in bytes
-- **Minimal Overhead**: Efficient memory checking with minimal performance impact
-- **Exception Handling**: Throws `MemoryLimitExceededException` when limits are exceeded
-- **Cross-Platform**: Works on Linux and other Unix-like systems
-- **Drop-in Replacement**: Compatible with existing nanoflann code
+You can directly drop the `nanoflann.hpp` file in your project. Alternatively,
+the CMake standard method is also available:
 
-### Memory Monitor Usage
+  * Build and "install" nanoflann. Set `CMAKE_INSTALL_PREFIX` to a proper path
+  and then execute `make install` (Linux, OSX) or build the `INSTALL`
+  target (Visual Studio).
+  * Then, add something like this to the CMake script of your project:
 
-```cpp
-#include "include/memory/nanoflann_debug/nanoflann_memory_monitor.hpp"
-#include <vector>
+```cmake
+# Find nanoflannConfig.cmake:
+find_package(nanoflann)
 
-// Define your dataset adaptor
-struct MyDatasetAdaptor {
-    const std::vector<std::array<float, 3>>& points;
-    
-    explicit MyDatasetAdaptor(const std::vector<std::array<float, 3>>& pts) 
-        : points(pts) {}
-    
-    inline size_t kdtree_get_point_count() const { return points.size(); }
-    inline float kdtree_get_pt(const size_t idx, const size_t dim) const {
-        return points[idx][dim];
-    }
-    template <class BBOX>
-    bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
-};
+add_executable(my_project test.cpp)
 
-int main() {
-    // Your dataset
-    std::vector<std::array<float, 3>> points = /* ... */;
-    MyDatasetAdaptor dataset(points);
-    
-    // Set memory threshold (e.g., 100 MB)
-    const size_t memory_threshold = 100 * 1024 * 1024;
-    
-    try {
-        // Create memory-monitored KD-tree
-        nanoflann::MemoryMonitoredKDTree<
-            nanoflann::L2_Simple_Adaptor<float, MyDatasetAdaptor, float, uint32_t>, 
-            MyDatasetAdaptor, 
-            3,  // 3D points
-            uint32_t> index(3, dataset, memory_threshold);
-        
-        // Use the index for searches
-        std::array<float, 3> query = {0.0f, 0.0f, 0.0f};
-        std::vector<uint32_t> indices(10);
-        std::vector<float> distances(10);
-        
-        size_t num_found = index.knnSearch(query.data(), 10, 
-                                         indices.data(), distances.data());
-        
-    } catch (const nanoflann::MemoryLimitExceededException& e) {
-        std::cerr << "Memory limit exceeded: " << e.what() << std::endl;
-        // Handle the memory limit exceeded case
-    }
-    
-    return 0;
-}
+# Make sure the include path is used:
+target_link_libraries(my_project nanoflann::nanoflann)
 ```
 
-### Memory Monitor Testing
+### 1.8. Package Managers
 
-Build and run the memory monitor unit test:
+#### Using `conan`
 
-```bash
-mkdir build && cd build
-cmake ..
-make
-./test_nanoflann_memory_monitor
+You can install pre-built binaries for `nanoflann` or build it from source using [Conan](https://conan.io/). Use the following command to install latest version:
+
+```sh
+$ conan install --requires="nanoflann/[*]" --build=missing
 ```
 
-### Memory Monitor Details
+For detailed instructions on how to use Conan, please refer to the [Conan documentation](https://docs.conan.io/2/).
 
-- **Memory Measurement**: Uses `/proc/self/status` on Linux for accurate RSS monitoring
-- **Check Points**: Memory is checked before tree construction and during node allocation
-- **Performance Impact**: Typically <1% overhead with ~1-5 microseconds per check
-- **Exception Information**: Provides current memory usage and threshold in error messages
+The `nanoflann` Conan recipe is kept up to date by Conan maintainers and community contributors.
+If the version is out of date, please [create an issue or pull request](https://github.com/conan-io/conan-center-index) on the ConanCenterIndex repository.
+
+#### Using `vcpkg`
+
+You can download and install nanoflann using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+
+```sh
+$ git clone https://github.com/Microsoft/vcpkg.git
+$ cd vcpkg
+$ ./bootstrap-vcpkg.sh
+$ ./vcpkg integrate install
+$ ./vcpkg install nanoflann
+```
+
+The nanoflann port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
+
+### 1.9. Compile time definitions
+
+  * `NANOFLANN_FIRST_MATCH`: If defined and two points have the same distance, the one with the lowest-index will be returned first. Otherwise there is no particular order.
+  * `NANOFLANN_NO_THREADS`: If defined, multithreading capabilities will be disabled, so that the library can be used without linking with pthreads. If one tries to use multiple threads, an exception will be thrown.
+
+------
+
+## 2. Any help choosing the KD-tree parameters?
+
+### 2.1. `KDTreeSingleIndexAdaptorParams::leaf_max_size`
+
+A KD-tree is... well, a tree :-). And as such it has a root node, a set of intermediary nodes and finally, "leaf" nodes which are those without children.
+
+Points (or, properly, point indices) are stored in leaf nodes. Each leaf contains a list of which points fall within its range.
+
+While building the tree, nodes are recursively divided until the number of points inside is equal or below some threshold. **That is `leaf_max_size`**. While doing queries, the  "tree algorithm" ends by selecting leaf nodes, then performing linear search (one-by-one) for the closest point to the query within all those in the leaf.
+
+So, `leaf_max_size` must be set as a **tradeoff**:
+  * Large values mean that the tree will be built faster (since the tree will be smaller), but each query will be slower (since the linear search in the leaf is to be done over more points).
+  * Small values will build the tree much slower (there will be many tree nodes), but queries will be faster... up to some point, since the "tree-part" of the search (logarithmic complexity) still has a significant cost.
+
+What number to select really depends on the application and even on the size of the processor cache memory, so ideally you should do some benchmarking for maximizing efficiency.
+
+But to help choosing a good value as a rule of thumb, I provide the following two benchmarks. Each graph represents the tree build (horizontal) and query (vertical) times for different `leaf_max_size` values between 1 and 10K (as 95% uncertainty ellipses, deformed due to the logarithmic scale).
+
+  * A 100K point cloud, uniformly distributed (each point has (x,y,z) `float` coordinates):
+
+![perf5_1e5pts_time_vs_maxleaf](https://raw.githubusercontent.com/jlblancoc/nanoflann/master/doc/perf5_1e5pts_time_vs_maxleaf.png)
+
+  * A ~150K point cloud from a real dataset (`scan_071_points.dat` from the [Freiburg Campus 360 dataset](http://ais.informatik.uni-freiburg.de/projects/datasets/fr360/), each point has (x,y,z) `float` coordinates):
+
+![perf5_1e5pts_time_vs_maxleaf_real_dataset](https://raw.githubusercontent.com/jlblancoc/nanoflann/master/doc/perf5_1e5pts_time_vs_maxleaf_real_dataset.png)
+
+So, it seems that a `leaf_max_size` **between 10 and 50** would be optimum in applications where the cost of queries dominates (e.g. [ICP](http://en.wikipedia.org/wiki/Iterative_closest_point])). At present, its default value is 10.
+
+
+### 2.2. `KDTreeSingleIndexAdaptorParams::checks`
+
+This parameter is really ignored in `nanoflann`, but was kept for backward compatibility with the original FLANN interface. Just ignore it.
+
+### 2.3. `KDTreeSingleIndexAdaptorParams::n_thread_build`
+
+This parameter determines the maximum number of threads that can be called concurrently during the construction of the KD tree. The default value is 1. When the parameter is set to 0, `nanoflann` automatically determines the number of threads to use.
+
+See [this pull request](https://github.com/jlblancoc/nanoflann/pull/236) for some benchmarking showing that using the maximum number of threads is not always the most efficient approach. Do benchmarking on your data!
+
+-----
+
+## 3. Performance
+
+### 3.1. `nanoflann`: faster and less memory usage
+
+Refer to the "Why a fork?" section above for the main optimization ideas behind `nanoflann`.
+
+Notice that there are no explicit SSE2/SSE3 optimizations in `nanoflann`, but the intensive usage of `inline` and templates in practice turns into automatically SSE-optimized code generated by the compiler.
+
+
+### 3.2. Benchmark: original `flann` vs `nanoflann`
+
+The most time-consuming part of many point cloud algorithms (like ICP) is querying a KD-Tree for nearest neighbors. This operation is therefore the most time critical.
+
+`nanoflann` provides a ~50% time saving with respect to the original `flann` implementation (times in this chart are in microseconds for each query):
+
+![perf3_query](https://raw.githubusercontent.com/jlblancoc/nanoflann/master/doc/perf3_query.small.png)
+
+Although most of the gain comes from the queries (due to the large number of them in any typical operation with point clouds), there is also some time saved while building the KD-tree index, due to the templatized-code but also for the avoidance of duplicating the data in an auxiliary matrix (times in the next chart are in milliseconds):
+
+![perf4_time_saved](https://raw.githubusercontent.com/jlblancoc/nanoflann/master/doc/perf4_time_saved.small.png)
+
+These performance tests are only representative of our testing. If you want to repeat them, read the instructions in [perf-tests](https://github.com/jlblancoc/nanoflann/tree/master/perf-tests)
+
+
+----
+
+## 4. Other KD-tree projects
+
+  * [FLANN](http://www.cs.ubc.ca/research/flann/) - Marius Muja and David G. Lowe (University of British Columbia).
+  * [FASTANN](http://www.robots.ox.ac.uk/~vgg/software/fastann/) - James Philbin (VGG, University of Oxford).
+  * [ANN](http://www.cs.umd.edu/~mount/ANN/) - David M. Mount and Sunil Arya (University of Maryland).
+  * [libkdtree++](https://packages.debian.org/source/sid/libkdtree++) - Martin F. Krafft & others.
+
+<br>
+
+*Note: The project logo is due to [CedarSeed](http://www.iconarchive.com/show/patisserie-icons-by-cedarseed/Flan-icon.html)*
+
+**Contributors**
+
+<a href="https://github.com/jlblancoc/nanoflann/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jlblancoc/nanoflann" />
+</a>

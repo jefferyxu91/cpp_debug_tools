@@ -5,7 +5,7 @@
  * a KD-tree with memory monitoring capabilities.
  */
 
-#include "nanoflann_memory_monitor.hpp"
+#include "../include/memory/nanoflann_debug/nanoflann_memory_monitor.hpp"
 #include <iostream>
 #include <vector>
 #include <random>

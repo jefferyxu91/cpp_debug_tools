@@ -97,7 +97,34 @@ install(TARGETS nanoflann
 find_package(Threads)
 target_link_libraries(nanoflann INTERFACE Threads::Threads)
 
-# Add memory monitor unit test
-add_executable(test_nanoflann_memory_monitor include/memory/nanoflann_debug/example_memory_monitor.cpp)
-target_link_libraries(test_nanoflann_memory_monitor nanoflann)
-target_include_directories(test_nanoflann_memory_monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(nanoflann::nanoflann ALIAS nanoflann)
+
+# Examples
+option(NANOFLANN_BUILD_EXAMPLES "Build examples" ON)
+if(NANOFLANN_BUILD_EXAMPLES)
+	# Add memory monitor example
+	add_executable(example_memory_monitor examples/example_memory_monitor.cpp)
+	target_link_libraries(example_memory_monitor nanoflann)
+	target_include_directories(example_memory_monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+# Tests
+option(NANOFLANN_BUILD_TESTS "Build unit tests" ON)
+option(NANOFLANN_USE_SYSTEM_GTEST "Use system GTest dependency" OFF)
+if(NANOFLANN_BUILD_TESTS)
+	enable_testing()
+	
+	# Find Google Test
+	find_package(GTest REQUIRED)
+	
+	# Add nanoflann memory monitor test
+	add_executable(test_nanoflann_memory_monitor test/nanoflann_memory_monitor_test.cpp)
+	target_link_libraries(test_nanoflann_memory_monitor nanoflann GTest::gtest GTest::gtest_main)
+	target_include_directories(test_nanoflann_memory_monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+	
+	# Add existing debug containers test
+	add_executable(test_debug_containers test/debug_containers_test.cpp)
+	target_link_libraries(test_debug_containers nanoflann GTest::gtest GTest::gtest_main)
+	target_include_directories(test_debug_containers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
