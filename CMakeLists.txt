@@ -34,12 +34,16 @@ if(GTest_FOUND)
     
     add_executable(real_nanoflann_memory_test test/real_nanoflann_memory_test.cpp)
     target_link_libraries(real_nanoflann_memory_test GTest::gtest GTest::gtest_main)
+    
+    add_executable(monitored_nanoflann_test test/monitored_nanoflann_test.cpp)
+    target_link_libraries(monitored_nanoflann_test GTest::gtest GTest::gtest_main)
 endif()
 
 # Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
 add_executable(nanoflann_memory_monitor_example examples/nanoflann_memory_monitor_example.cpp)
 add_executable(real_nanoflann_memory_example examples/real_nanoflann_memory_example.cpp)
+add_executable(monitored_nanoflann_example examples/monitored_nanoflann_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -47,10 +51,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
         target_compile_options(nanoflann_memory_monitor_test PRIVATE -Wall -Wextra -O2)
         target_compile_options(real_nanoflann_memory_test PRIVATE -Wall -Wextra -O2)
+        target_compile_options(monitored_nanoflann_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
     target_compile_options(nanoflann_memory_monitor_example PRIVATE -Wall -Wextra -O2)
     target_compile_options(real_nanoflann_memory_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(monitored_nanoflann_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -60,6 +66,7 @@ install(DIRECTORY include/memory/container_debug/
 
 install(FILES include/memory/nanoflann_memory_monitor.hpp
         include/memory/nanoflann_memory_monitor_impl.hpp
+        include/memory/nanoflann_monitored_index.hpp
         DESTINATION include/memory/)
 
 install(FILES docs/MEMORY_DEBUG_GUIDE.md docs/ROS_INTEGRATION_GUIDE.md docs/NANOFLANN_MEMORY_MONITOR_GUIDE.md
@@ -76,7 +83,9 @@ if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
     message(STATUS "    - nanoflann_memory_monitor_test (Google Test)")
     message(STATUS "    - real_nanoflann_memory_test (Google Test)")
+    message(STATUS "    - monitored_nanoflann_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
 message(STATUS "    - nanoflann_memory_monitor_example")
 message(STATUS "    - real_nanoflann_memory_example")
+message(STATUS "    - monitored_nanoflann_example")
