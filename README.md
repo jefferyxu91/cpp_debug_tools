@@ -9,7 +9,8 @@ debug_containers/
 ├── include/
 │   └── memory/
 │       └── container_debug/
-│           └── debug_containers.hpp    # Main header file
+│           ├── debug_containers.hpp    # Advanced header with context capture
+│           └── simple_debug_containers.hpp  # Simple non-intrusive header
 ├── test/
 │   ├── basic/                          # Basic functionality tests
 │   │   ├── example.cpp
@@ -65,8 +66,24 @@ make
 ./test_ros_integration
 ```
 
-### Using the Header
+### Using the Headers
 
+#### Simple Non-Intrusive Approach (Recommended)
+```cpp
+#include <memory/container_debug/simple_debug_containers.hpp>
+
+int main() {
+    // Set memory threshold (default: 20MB)
+    Debug::set_memory_threshold(1024 * 1024); // 1MB
+    
+    // Use debug containers - automatically captures file/line/function
+    Debug::vector<int> my_vector(1000); // Will log with caller's location
+    
+    return 0;
+}
+```
+
+#### Advanced Context Capture Approach
 ```cpp
 #include <memory/container_debug/debug_containers.hpp>
 
@@ -74,8 +91,12 @@ int main() {
     // Set memory threshold (default: 20MB)
     Debug::set_memory_threshold(1024 * 1024); // 1MB
     
-    // Use debug containers instead of std containers
-    Debug::vector<int> my_vector(1000); // Will log if allocation > threshold
+    // Use debug containers with explicit context capture
+    Debug::vector<int> my_vector(__FILE__, __LINE__, __FUNCTION__);
+    
+    // Or use automatic context capture
+    AUTO_CONTEXT();
+    Debug::vector<int> my_vector2(1000); // Will log with caller's location
     
     return 0;
 }
@@ -83,11 +104,13 @@ int main() {
 
 ## Features
 
+- **Non-Intrusive Design**: Automatically captures caller's file, line, and function without explicit context passing
 - **Comprehensive Memory Tracking**: Monitors all allocation types (constructors, copy operations, assignments, reserves)
 - **Custom Output Streams**: Redirect warnings to any logging system
 - **ROS Integration**: Seamless integration with ROS logging
 - **Minimal Overhead**: Zero performance impact when allocations are below threshold
 - **Complete Coverage**: All major std containers supported
+- **Two Implementation Options**: Simple non-intrusive and advanced context capture approaches
 
 ## Available Containers
 
