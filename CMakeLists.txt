@@ -97,7 +97,7 @@ install(TARGETS nanoflann
 find_package(Threads)
 target_link_libraries(nanoflann INTERFACE Threads::Threads)
 
-# Add memory monitor example (minimal addition)
-add_executable(example_memory_monitor example_memory_monitor.cpp)
-target_link_libraries(example_memory_monitor nanoflann)
-target_include_directories(example_memory_monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+# Add memory monitor unit test
+add_executable(test_nanoflann_memory_monitor include/memory/nanoflann_debug/example_memory_monitor.cpp)
+target_link_libraries(test_nanoflann_memory_monitor nanoflann)
+target_include_directories(test_nanoflann_memory_monitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
