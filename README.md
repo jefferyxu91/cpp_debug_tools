@@ -8,12 +8,17 @@ A minimalistic C++ header library for debugging standard library containers with
 debug_containers/
 ├── include/
 │   └── memory/
-│       └── container_debug/
-│           └── debug_containers.hpp    # Main header file
+│       ├── container_debug/
+│       │   └── debug_containers.hpp    # Main header file
+│       └── nanoflann_debug/
+│           ├── nanoflann_memory_monitor.hpp  # Nanoflann memory monitor
+│           └── README.md                      # Nanoflann monitor documentation
 ├── test/
-│   └── debug_containers_test.cpp       # Google Test suite
+│   ├── debug_containers_test.cpp       # Google Test suite
+│   └── nanoflann_memory_monitor_test.cpp     # Nanoflann monitor tests
 ├── examples/
-│   └── memory_debug_example.cpp        # Memory debug container example
+│   ├── memory_debug_example.cpp        # Memory debug container example
+│   └── example_memory_monitor.cpp      # Nanoflann monitor example
 ├── docs/                               # Documentation
 │   ├── MEMORY_DEBUG_GUIDE.md          # Memory debug usage guide
 │   └── ROS_INTEGRATION_GUIDE.md       # ROS integration guide
@@ -47,9 +52,11 @@ make
 
 # Run tests (if GTest is available)
 ./debug_containers_test
+./nanoflann_memory_monitor_test
 
-# Run example
+# Run examples
 ./memory_debug_example
+./nanoflann_memory_monitor_example
 
 ### Using the Header
 
@@ -93,15 +100,23 @@ All standard containers are available with the `Debug::` prefix:
 
 - [Memory Debug Guide](docs/MEMORY_DEBUG_GUIDE.md) - Complete memory debug feature documentation and examples
 - [ROS Integration Guide](docs/ROS_INTEGRATION_GUIDE.md) - ROS-specific integration examples
+- [Nanoflann Memory Monitor](include/memory/nanoflann_debug/README.md) - Memory-monitored nanoflann KD-tree extension
 
 ## Examples
 
-The project includes comprehensive examples in the `test/` directory:
+The project includes comprehensive examples in the `test/` and `examples/` directories:
 
+### Debug Containers
 - **Basic Tests**: Simple usage examples
 - **Constructor Tests**: Demonstrates constructor-based allocation tracking
 - **Comprehensive Tests**: Shows all container types and features
 - **ROS Integration Tests**: ROS logging integration examples
+
+### Nanoflann Memory Monitor
+- **Memory Monitor Example**: Demonstrates memory-monitored KD-tree construction
+- **Memory Limit Testing**: Shows exception handling when memory limits are exceeded
+- **Custom Parameters**: Examples of using custom build parameters
+- **Performance Testing**: Comprehensive test suite with 8 test cases
 
 ## Installation
 
