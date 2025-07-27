@@ -9,6 +9,7 @@
 #include <thread>
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <mutex>
@@ -140,9 +141,13 @@ public:
         }
     }
     
-    // Get current statistics
-    static MemoryStats get_stats() {
-        return stats_;
+    // Get current statistics snapshot
+    static void get_stats_snapshot(size_t& current, size_t& peak, size_t& total, size_t& count, bool& exceeded) {
+        current = stats_.current_usage.load();
+        peak = stats_.peak_usage.load();
+        total = stats_.total_allocations.load();
+        count = stats_.allocation_count.load();
+        exceeded = stats_.threshold_exceeded.load();
     }
     
     // Reset statistics
@@ -205,14 +210,12 @@ public:
             while (running_.load()) {
                 auto config = MemoryTracker::get_config();
                 if (config.enable_periodic_reports) {
-                    auto stats = MemoryTracker::get_stats();
+                    size_t current, peak, total, count;
+                    bool exceeded;
+                    MemoryTracker::get_stats_snapshot(current, peak, total, count, exceeded);
                     
                     if (config.periodic_callback) {
-                        config.periodic_callback(
-                            stats.current_usage.load(),
-                            stats.peak_usage.load(),
-                            stats.allocation_count.load()
-                        );
+                        config.periodic_callback(current, peak, count);
                     }
                 }
                 
@@ -235,78 +238,49 @@ public:
     }
 };
 
-// Custom allocator for nanoflann that uses the memory tracker
-template<typename T>
-class TrackedAllocator {
+// Process memory monitoring utilities
+class ProcessMemoryMonitor {
+private:
+    static size_t get_current_rss() {
+        // Read from /proc/self/status on Linux
+        std::ifstream status_file("/proc/self/status");
+        std::string line;
+        while (std::getline(status_file, line)) {
+            if (line.substr(0, 6) == "VmRSS:") {
+                std::istringstream iss(line);
+                std::string name, value, unit;
+                iss >> name >> value >> unit;
+                
+                size_t memory_kb = std::stoull(value);
+                return memory_kb * 1024; // Convert KB to bytes
+            }
+        }
+        return 0;
+    }
+    
 public:
-    using value_type = T;
-    using pointer = T*;
-    using const_pointer = const T*;
-    using reference = T&;
-    using const_reference = const T&;
-    using size_type = std::size_t;
-    using difference_type = std::ptrdiff_t;
-    
-    template<typename U>
-    struct rebind {
-        using other = TrackedAllocator<U>;
-    };
-    
-    TrackedAllocator() = default;
-    
-    template<typename U>
-    TrackedAllocator(const TrackedAllocator<U>&) noexcept {}
-    
-    pointer allocate(size_type n) {
-        size_t bytes = n * sizeof(T);
-        pointer ptr = static_cast<pointer>(std::malloc(bytes));
-        
-        if (ptr) {
-            MemoryTracker::track_allocation(ptr, bytes);
-        }
-        
-        return ptr;
-    }
-    
-    void deallocate(pointer ptr, size_type n) noexcept {
-        if (ptr) {
-            MemoryTracker::track_deallocation(ptr);
-            std::free(ptr);
-        }
-    }
-    
-    template<typename U, typename... Args>
-    void construct(U* ptr, Args&&... args) {
-        new(ptr) U(std::forward<Args>(args)...);
-    }
-    
-    template<typename U>
-    void destroy(U* ptr) {
-        ptr->~U();
+    static size_t get_memory_usage() {
+        return get_current_rss();
     }
 };
-
-template<typename T, typename U>
-bool operator==(const TrackedAllocator<T>&, const TrackedAllocator<U>&) noexcept {
-    return true;
-}
-
-template<typename T, typename U>
-bool operator!=(const TrackedAllocator<T>&, const TrackedAllocator<U>&) noexcept {
-    return false;
-}
 
 // Main memory monitor class with RAII
 class MemoryMonitor {
 private:
     PeriodicMonitor periodic_monitor_;
     bool was_monitoring_enabled_;
+    size_t baseline_memory_;
+    mutable size_t peak_memory_during_monitoring_;
     
 public:
     explicit MemoryMonitor(const MonitorConfig& config = MonitorConfig{}) {
         was_monitoring_enabled_ = MemoryTracker::is_monitoring_enabled();
         MemoryTracker::configure(config);
         MemoryTracker::enable_monitoring(true);
+        
+        // Record baseline memory usage
+        baseline_memory_ = ProcessMemoryMonitor::get_memory_usage();
+        peak_memory_during_monitoring_ = baseline_memory_;
         
         if (config.enable_periodic_reports) {
             periodic_monitor_.start();
@@ -318,42 +292,53 @@ public:
         MemoryTracker::enable_monitoring(was_monitoring_enabled_);
     }
     
-    // Get current memory usage
+    // Get current memory usage (process-based)
     size_t get_current_usage() const {
-        return MemoryTracker::get_stats().current_usage.load();
+        size_t current = ProcessMemoryMonitor::get_memory_usage();
+        return current > baseline_memory_ ? current - baseline_memory_ : 0;
     }
     
-    // Get peak memory usage
+    // Get peak memory usage during monitoring
     size_t get_peak_usage() const {
-        return MemoryTracker::get_stats().peak_usage.load();
+        size_t current = ProcessMemoryMonitor::get_memory_usage();
+        if (current > peak_memory_during_monitoring_) {
+            peak_memory_during_monitoring_ = current;
+        }
+        return peak_memory_during_monitoring_ > baseline_memory_ ? 
+               peak_memory_during_monitoring_ - baseline_memory_ : 0;
     }
     
     // Check if threshold was exceeded
     bool threshold_exceeded() const {
-        return MemoryTracker::get_stats().threshold_exceeded.load();
+        return get_current_usage() > MemoryTracker::get_config().threshold_bytes;
     }
     
-    // Get full statistics
-    MemoryStats get_stats() const {
-        return MemoryTracker::get_stats();
+    // Get current process memory
+    size_t get_total_process_memory() const {
+        return ProcessMemoryMonitor::get_memory_usage();
     }
     
     // Reset statistics
     void reset() {
+        baseline_memory_ = ProcessMemoryMonitor::get_memory_usage();
+        peak_memory_during_monitoring_ = baseline_memory_;
         MemoryTracker::reset_stats();
     }
     
     // Generate a memory report
     std::string generate_report() const {
-        auto stats = get_stats();
-        std::string report;
+        size_t current_usage = get_current_usage();
+        size_t peak_usage = get_peak_usage();
+        size_t total_process = get_total_process_memory();
         
+        std::string report;
         report += "=== NanoFlann Memory Monitor Report ===\n";
-        report += "Current Usage: " + std::to_string(stats.current_usage.load() / (1024.0 * 1024.0)) + " MB\n";
-        report += "Peak Usage: " + std::to_string(stats.peak_usage.load() / (1024.0 * 1024.0)) + " MB\n";
-        report += "Total Allocated: " + std::to_string(stats.total_allocations.load() / (1024.0 * 1024.0)) + " MB\n";
-        report += "Allocation Count: " + std::to_string(stats.allocation_count.load()) + "\n";
-        report += "Threshold Exceeded: " + std::string(stats.threshold_exceeded.load() ? "Yes" : "No") + "\n";
+        report += "Memory Usage Since Monitor Start: " + std::to_string(current_usage / (1024.0 * 1024.0)) + " MB\n";
+        report += "Peak Usage During Monitoring: " + std::to_string(peak_usage / (1024.0 * 1024.0)) + " MB\n";
+        report += "Total Process Memory: " + std::to_string(total_process / (1024.0 * 1024.0)) + " MB\n";
+        report += "Baseline Memory: " + std::to_string(baseline_memory_ / (1024.0 * 1024.0)) + " MB\n";
+        report += "Threshold: " + std::to_string(MemoryTracker::get_config().threshold_bytes / (1024.0 * 1024.0)) + " MB\n";
+        report += "Threshold Exceeded: " + std::string(threshold_exceeded() ? "Yes" : "No") + "\n";
         report += "=======================================\n";
         
         return report;
@@ -370,9 +355,8 @@ public:
 
 #define NANOFLANN_MONITOR_REPORT() \
     do { \
-        auto stats = NanoFlannMemory::MemoryTracker::get_stats(); \
-        std::cerr << "[NANOFLANN] Current: " << (stats.current_usage.load() / (1024.0 * 1024.0)) << " MB, " \
-                  << "Peak: " << (stats.peak_usage.load() / (1024.0 * 1024.0)) << " MB\n"; \
+        size_t current = NanoFlannMemory::ProcessMemoryMonitor::get_memory_usage(); \
+        std::cerr << "[NANOFLANN] Process Memory: " << (current / (1024.0 * 1024.0)) << " MB\n"; \
     } while(0)
 
 #define NANOFLANN_MONITOR_RESET() \

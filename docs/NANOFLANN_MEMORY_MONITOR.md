@@ -20,20 +20,22 @@ A low-overhead, non-intrusive memory monitoring tool specifically designed for t
 ```cpp
 #include <memory/nanoflann_memory_monitor.hpp>
 
-// Simple monitoring with 50MB threshold
-NANOFLANN_MONITOR_START(50);  // 50MB threshold
+// Configure monitoring
+NanoFlannMemory::MonitorConfig config;
+config.threshold_bytes = 50 * 1024 * 1024;  // 50MB threshold
 
-// Use TrackedAllocator with your nanoflann index
-using TrackedAlloc = NanoFlannMemory::TrackedAllocator<float>;
+// Start monitoring
+NanoFlannMemory::MemoryMonitor monitor(config);
+
+// Your existing nanoflann code - NO CHANGES NEEDED!
 nanoflann::KDTreeSingleIndexAdaptor<
     nanoflann::L2_Simple_Adaptor<float, PointCloud>,
     PointCloud,
-    3,
-    TrackedAlloc
+    3
 > index(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(10));
 
 // Check memory usage
-NANOFLANN_MONITOR_REPORT();
+std::cout << monitor.generate_report() << std::endl;
 ```
 
 ### Advanced Configuration
