@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "nanoflann/include/nanoflann.hpp"
+#include "../../../nanoflann/include/nanoflann.hpp"
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <stdexcept>

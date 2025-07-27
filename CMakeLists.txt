@@ -23,21 +23,34 @@ endif()
 # Find ROS if available (optional)
 find_package(rosconsole QUIET)
 
-# Google Test executable (only if GTest is found)
+# Find Threads for nanoflann
+find_package(Threads REQUIRED)
+
+# Google Test executables (only if GTest is found)
 if(GTest_FOUND)
     add_executable(debug_containers_test test/debug_containers_test.cpp)
     target_link_libraries(debug_containers_test GTest::gtest GTest::gtest_main)
+    
+    # Nanoflann memory monitor test
+    add_executable(nanoflann_memory_monitor_test test/nanoflann_memory_monitor_test.cpp)
+    target_link_libraries(nanoflann_memory_monitor_test GTest::gtest GTest::gtest_main Threads::Threads)
 endif()
 
-# Example executable
+# Example executables
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
+
+# Nanoflann memory monitor example
+add_executable(nanoflann_memory_monitor_example examples/example_memory_monitor.cpp)
+target_link_libraries(nanoflann_memory_monitor_example Threads::Threads)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(GTest_FOUND)
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
+        target_compile_options(nanoflann_memory_monitor_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(nanoflann_memory_monitor_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -54,8 +67,11 @@ message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "  GTest: ${GTest_FOUND}")
 message(STATUS "  ROS Integration: ${rosconsole_FOUND}")
+message(STATUS "  Threads: ${CMAKE_THREAD_LIBS_INIT}")
 message(STATUS "  Executables to build:")
 if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
+    message(STATUS "    - nanoflann_memory_monitor_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
+message(STATUS "    - nanoflann_memory_monitor_example")
