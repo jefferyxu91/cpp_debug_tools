@@ -9,6 +9,26 @@
 #include <iostream>
 #include <thread>
 #include <unistd.h>  // for sysconf
+#include <type_traits>
+
+// SFINAE: detect if Index has member function usedMemory(Index&)
+namespace detail {
+    template<typename, typename, typename = void>
+    struct has_usedMemory : std::false_type {};
+
+    template<typename Index, typename Ret>
+    struct has_usedMemory<Index, Ret, std::void_t<decltype(std::declval<Index>().usedMemory(std::declval<Index&>()))>> : std::true_type {};
+
+    template<typename Index>
+    constexpr bool has_usedMemory_v = has_usedMemory<Index, decltype(std::declval<Index>().usedMemory(std::declval<Index&>()))>::value;
+
+    // Helper to get memory or 0
+    template<typename Index>
+    auto getPoolMem(Index& idx) -> std::enable_if_t<has_usedMemory_v<Index>, std::size_t> { return idx.usedMemory(idx); }
+
+    template<typename Index>
+    auto getPoolMem(Index&) -> std::enable_if_t<!has_usedMemory_v<Index>, std::size_t> { return 0; }
+} // namespace detail
 
 namespace MemoryWatch {
 
@@ -184,8 +204,7 @@ void watchNanoflannBuild(
 {
     if (!cb) cb = PeakMemoryWatcher::Callback(); // default callback
 
-    // Capture pool memory before build. We need SFINAE check that usedMemory exists.
-    const auto memory_before = index.usedMemory(index);
+    const auto memory_before = detail::getPoolMem(index);
 
     // Start RSS watcher
     PeakMemoryWatcher rssWatcher(rss_threshold_bytes, sampling_period, cb);
@@ -195,7 +214,7 @@ void watchNanoflannBuild(
 
     // rssWatcher is destroyed here and will call callback if RSS exceeded.
 
-    const auto memory_after = index.usedMemory(index);
+    const auto memory_after = detail::getPoolMem(index);
     const std::size_t pool_diff = (memory_after > memory_before) ? (memory_after - memory_before) : 0;
 
     if (pool_threshold_bytes > 0 && pool_diff > pool_threshold_bytes) {
