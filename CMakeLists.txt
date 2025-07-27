@@ -13,6 +13,9 @@ endif()
 # Include directories
 include_directories(include)
 
+# Option for automatic context capture
+option(DEBUG_CONTAINERS_AUTO_CAPTURE "Enable automatic context capture for debug containers" OFF)
+
 # Find ROS if available (optional)
 find_package(rosconsole QUIET)
 
@@ -22,6 +25,7 @@ add_executable(test_simple test/basic/simple_test.cpp)
 add_executable(test_file_line test/basic/file_line_test.cpp)
 add_executable(test_function_name test/basic/function_name_test.cpp)
 add_executable(test_caller_context test/basic/caller_context_test.cpp)
+add_executable(test_auto_context test/basic/auto_context_test.cpp)
 
 # Constructor tests
 add_executable(test_constructor test/constructor/constructor_test.cpp)
@@ -48,11 +52,15 @@ endif()
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    if(DEBUG_CONTAINERS_AUTO_CAPTURE)
+        add_definitions(-DDEBUG_CONTAINERS_AUTO_CAPTURE)
+    endif()
     target_compile_options(test_basic PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_simple PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_file_line PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_function_name PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_caller_context PRIVATE -Wall -Wextra -O2)
+    target_compile_options(test_auto_context PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_constructor PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_comprehensive PRIVATE -Wall -Wextra -O2)
     target_compile_options(test_final PRIVATE -Wall -Wextra -O2)
@@ -83,6 +91,7 @@ message(STATUS "    - test_simple")
 message(STATUS "    - test_file_line")
 message(STATUS "    - test_function_name")
 message(STATUS "    - test_caller_context")
+message(STATUS "    - test_auto_context")
 message(STATUS "    - test_constructor")
 message(STATUS "    - test_comprehensive")
 message(STATUS "    - test_final")

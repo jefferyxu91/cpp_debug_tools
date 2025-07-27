@@ -57,7 +57,57 @@
 #define DEBUG_UNORDERED_MULTIMAP(key_type, value_type, name) \
     Debug::unordered_multimap<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
 
+// Enhanced macros that automatically capture context for any container usage
+#define DEBUG_VECTOR_AUTO(type, name, ...) \
+    Debug::vector<type> name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_STRING_AUTO(name, ...) \
+    Debug::string name(__FILE__, __LINE__, __FUNCTION__)
+
+#define DEBUG_MAP_AUTO(key_type, value_type, name, ...) \
+    Debug::map<key_type, value_type> name(__FILE__, __LINE__, __FUNCTION__)
+
+// Note: For automatic context capture, use AUTO_CONTEXT() macro
+// or the DEBUG_* macros instead of overriding std:: names
+
 namespace Debug {
+
+// Context capturing class
+class CallerContext {
+public:
+    CallerContext(const char* file, int line, const char* function)
+        : file_(file), line_(line), function_(function) {}
+    
+    const char* file() const { return file_; }
+    int line() const { return line_; }
+    const char* function() const { return function_; }
+    
+private:
+    const char* file_;
+    int line_;
+    const char* function_;
+};
+
+// Global context stack for automatic capture
+thread_local std::vector<CallerContext> context_stack;
+
+// RAII class to automatically push/pop context
+class ContextGuard {
+public:
+    ContextGuard(const char* file, int line, const char* function) {
+        context_stack.emplace_back(file, line, function);
+    }
+    
+    ~ContextGuard() {
+        if (!context_stack.empty()) {
+            context_stack.pop_back();
+        }
+    }
+};
+
+// Macro to automatically capture context
+#define AUTO_CONTEXT() \
+    Debug::ContextGuard __context_guard(__FILE__, __LINE__, __FUNCTION__)
 
 // Configuration
 constexpr size_t DEFAULT_MEMORY_THRESHOLD = 20 * 1024 * 1024; // 20MB
@@ -77,6 +127,22 @@ inline void print_allocation_info(size_t size, const char* file, int line, const
                              std::to_string(size) + " bytes at " + 
                              std::string(file) + ":" + std::to_string(line) + 
                              " in function '" + std::string(function) + "'";
+        output_stream(message);
+    }
+}
+
+// Utility function to print allocation info with automatic context
+inline void print_allocation_info_auto(size_t size) {
+    if (size > memory_threshold) {
+        std::string message = "[DEBUG] Large allocation detected: " + 
+                             std::to_string(size) + " bytes";
+        
+        if (!context_stack.empty()) {
+            const auto& context = context_stack.back();
+            message += " at " + std::string(context.file()) + ":" + std::to_string(context.line()) + 
+                      " in function '" + std::string(context.function()) + "'";
+        }
+        
         output_stream(message);
     }
 }
@@ -183,7 +249,11 @@ public:
     // Constructor with size - tracks allocation
     explicit vector(size_t count) : base_type(count) {
         size_t total_size = count * sizeof(T);
-        DEBUG_CONTAINER_ALLOC(total_size);
+        if (!context_stack.empty()) {
+            print_allocation_info_auto(total_size);
+        } else {
+            DEBUG_CONTAINER_ALLOC(total_size);
+        }
     }
     
     // Constructor with size and value - tracks allocation
@@ -191,6 +261,8 @@ public:
         size_t total_size = count * sizeof(T);
         if (caller_file_) {
             print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else if (!context_stack.empty()) {
+            print_allocation_info_auto(total_size);
         } else {
             DEBUG_CONTAINER_ALLOC(total_size);
         }
@@ -241,6 +313,8 @@ public:
         size_t total_size = new_cap * sizeof(T);
         if (caller_file_) {
             print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else if (!context_stack.empty()) {
+            print_allocation_info_auto(total_size);
         } else {
             DEBUG_CONTAINER_ALLOC(total_size);
         }
@@ -252,6 +326,8 @@ public:
         size_t total_size = count * sizeof(T);
         if (caller_file_) {
             print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else if (!context_stack.empty()) {
+            print_allocation_info_auto(total_size);
         } else {
             DEBUG_CONTAINER_ALLOC(total_size);
         }
@@ -262,6 +338,8 @@ public:
         size_t total_size = count * sizeof(T);
         if (caller_file_) {
             print_allocation_info(total_size, caller_file_, caller_line_, caller_function_);
+        } else if (!context_stack.empty()) {
+            print_allocation_info_auto(total_size);
         } else {
             DEBUG_CONTAINER_ALLOC(total_size);
         }

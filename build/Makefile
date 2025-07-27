@@ -227,6 +227,19 @@ test_caller_context/fast:
 .PHONY : test_caller_context/fast
 
 #=============================================================================
+# Target rules for targets named test_auto_context
+
+# Build rule for target.
+test_auto_context: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_auto_context
+.PHONY : test_auto_context
+
+# fast build rule for target.
+test_auto_context/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_auto_context.dir/build.make CMakeFiles/test_auto_context.dir/build
+.PHONY : test_auto_context/fast
+
+#=============================================================================
 # Target rules for targets named test_constructor
 
 # Build rule for target.
@@ -264,6 +277,30 @@ test_final: cmake_check_build_system
 test_final/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_final.dir/build.make CMakeFiles/test_final.dir/build
 .PHONY : test_final/fast
+
+test/basic/auto_context_test.o: test/basic/auto_context_test.cpp.o
+.PHONY : test/basic/auto_context_test.o
+
+# target to build an object file
+test/basic/auto_context_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_auto_context.dir/build.make CMakeFiles/test_auto_context.dir/test/basic/auto_context_test.cpp.o
+.PHONY : test/basic/auto_context_test.cpp.o
+
+test/basic/auto_context_test.i: test/basic/auto_context_test.cpp.i
+.PHONY : test/basic/auto_context_test.i
+
+# target to preprocess a source file
+test/basic/auto_context_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_auto_context.dir/build.make CMakeFiles/test_auto_context.dir/test/basic/auto_context_test.cpp.i
+.PHONY : test/basic/auto_context_test.cpp.i
+
+test/basic/auto_context_test.s: test/basic/auto_context_test.cpp.s
+.PHONY : test/basic/auto_context_test.s
+
+# target to generate assembly for a file
+test/basic/auto_context_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_auto_context.dir/build.make CMakeFiles/test_auto_context.dir/test/basic/auto_context_test.cpp.s
+.PHONY : test/basic/auto_context_test.cpp.s
 
 test/basic/caller_context_test.o: test/basic/caller_context_test.cpp.o
 .PHONY : test/basic/caller_context_test.o
@@ -469,6 +506,7 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... test_auto_context"
 	@echo "... test_basic"
 	@echo "... test_caller_context"
 	@echo "... test_comprehensive"
@@ -477,6 +515,9 @@ help:
 	@echo "... test_final"
 	@echo "... test_function_name"
 	@echo "... test_simple"
+	@echo "... test/basic/auto_context_test.o"
+	@echo "... test/basic/auto_context_test.i"
+	@echo "... test/basic/auto_context_test.s"
 	@echo "... test/basic/caller_context_test.o"
 	@echo "... test/basic/caller_context_test.i"
 	@echo "... test/basic/caller_context_test.s"

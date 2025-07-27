@@ -3,6 +3,7 @@
 /workspace/build/CMakeFiles/test_file_line.dir
 /workspace/build/CMakeFiles/test_function_name.dir
 /workspace/build/CMakeFiles/test_caller_context.dir
+/workspace/build/CMakeFiles/test_auto_context.dir
 /workspace/build/CMakeFiles/test_constructor.dir
 /workspace/build/CMakeFiles/test_comprehensive.dir
 /workspace/build/CMakeFiles/test_final.dir
