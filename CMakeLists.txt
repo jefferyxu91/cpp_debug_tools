@@ -12,6 +12,7 @@ endif()
 
 # Include directories
 include_directories(include)
+include_directories(thirdparty/nanoflann/include)
 
 # Find GTest (optional)
 find_package(GTest QUIET)

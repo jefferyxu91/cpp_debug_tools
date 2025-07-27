@@ -150,4 +150,55 @@ void watchPeakMemory(std::size_t threshold_bytes,
 
 } // namespace MemoryWatch
 
-#endif // NANOFLANN_MEMORY_WATCHER_HPP
+#ifdef NANOFLANN_VERSION
+#include <type_traits>
+
+namespace MemoryWatch {
+
+/**
+ * watchNanoflannBuild
+ * -------------------
+ * Helper that specifically targets nanoflann indices. It measures two things:
+ *   1. The process-wide RSS peak (via PeakMemoryWatcher)
+ *   2. The nanoflann internal memory pool (allocator) growth obtained via
+ *      `index.usedMemory(index)` before and after building.
+ *
+ * The user can supply independent thresholds for both kinds of memory; either
+ * can be set to 0 to disable checking. If the pool memory delta OR the RSS
+ * delta exceeds its respective threshold, the callback is invoked exactly
+ * once.
+ */
+template<typename NanoflannIndex>
+void watchNanoflannBuild(
+    NanoflannIndex& index,
+    std::size_t rss_threshold_bytes,
+    std::size_t pool_threshold_bytes = 0,
+    typename PeakMemoryWatcher::Callback cb = nullptr,
+    std::chrono::milliseconds sampling_period = std::chrono::milliseconds(10))
+{
+    if (!cb) cb = PeakMemoryWatcher::Callback(); // default callback
+
+    // Capture pool memory before build. We need SFINAE check that usedMemory exists.
+    const auto memory_before = index.usedMemory(index);
+
+    // Start RSS watcher
+    PeakMemoryWatcher rssWatcher(rss_threshold_bytes, sampling_period, cb);
+
+    // Do the actual build
+    index.buildIndex();
+
+    // rssWatcher is destroyed here and will call callback if RSS exceeded.
+
+    const auto memory_after = index.usedMemory(index);
+    const std::size_t pool_diff = (memory_after > memory_before) ? (memory_after - memory_before) : 0;
+
+    if (pool_threshold_bytes > 0 && pool_diff > pool_threshold_bytes) {
+        cb(pool_diff);
+    }
+}
+
+} // namespace MemoryWatch
+
+#endif // NANOFLANN_VERSION already included
+
+#endif // NANOFLANN_MEMORY_WATCHER_HPP (second guard remains as is; no dup)
