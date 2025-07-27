@@ -188,6 +188,19 @@ test_simple/fast:
 .PHONY : test_simple/fast
 
 #=============================================================================
+# Target rules for targets named test_simple_debug
+
+# Build rule for target.
+test_simple_debug: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_simple_debug
+.PHONY : test_simple_debug
+
+# fast build rule for target.
+test_simple_debug/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_debug.dir/build.make CMakeFiles/test_simple_debug.dir/build
+.PHONY : test_simple_debug/fast
+
+#=============================================================================
 # Target rules for targets named test_file_line
 
 # Build rule for target.
@@ -404,6 +417,7 @@ test/basic/simple_test.o: test/basic/simple_test.cpp.o
 # target to build an object file
 test/basic/simple_test.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple.dir/build.make CMakeFiles/test_simple.dir/test/basic/simple_test.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_debug.dir/build.make CMakeFiles/test_simple_debug.dir/test/basic/simple_test.cpp.o
 .PHONY : test/basic/simple_test.cpp.o
 
 test/basic/simple_test.i: test/basic/simple_test.cpp.i
@@ -412,6 +426,7 @@ test/basic/simple_test.i: test/basic/simple_test.cpp.i
 # target to preprocess a source file
 test/basic/simple_test.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple.dir/build.make CMakeFiles/test_simple.dir/test/basic/simple_test.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_debug.dir/build.make CMakeFiles/test_simple_debug.dir/test/basic/simple_test.cpp.i
 .PHONY : test/basic/simple_test.cpp.i
 
 test/basic/simple_test.s: test/basic/simple_test.cpp.s
@@ -420,6 +435,7 @@ test/basic/simple_test.s: test/basic/simple_test.cpp.s
 # target to generate assembly for a file
 test/basic/simple_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple.dir/build.make CMakeFiles/test_simple.dir/test/basic/simple_test.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_simple_debug.dir/build.make CMakeFiles/test_simple_debug.dir/test/basic/simple_test.cpp.s
 .PHONY : test/basic/simple_test.cpp.s
 
 test/comprehensive/comprehensive_test.o: test/comprehensive/comprehensive_test.cpp.o
@@ -515,6 +531,7 @@ help:
 	@echo "... test_final"
 	@echo "... test_function_name"
 	@echo "... test_simple"
+	@echo "... test_simple_debug"
 	@echo "... test/basic/auto_context_test.o"
 	@echo "... test/basic/auto_context_test.i"
 	@echo "... test/basic/auto_context_test.s"

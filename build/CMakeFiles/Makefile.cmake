@@ -51,6 +51,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/test_basic.dir/DependInfo.cmake"
   "CMakeFiles/test_simple.dir/DependInfo.cmake"
+  "CMakeFiles/test_simple_debug.dir/DependInfo.cmake"
   "CMakeFiles/test_file_line.dir/DependInfo.cmake"
   "CMakeFiles/test_function_name.dir/DependInfo.cmake"
   "CMakeFiles/test_caller_context.dir/DependInfo.cmake"

@@ -1,5 +1,6 @@
 /workspace/build/CMakeFiles/test_basic.dir
 /workspace/build/CMakeFiles/test_simple.dir
+/workspace/build/CMakeFiles/test_simple_debug.dir
 /workspace/build/CMakeFiles/test_file_line.dir
 /workspace/build/CMakeFiles/test_function_name.dir
 /workspace/build/CMakeFiles/test_caller_context.dir
