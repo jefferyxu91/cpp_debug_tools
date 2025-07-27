@@ -31,6 +31,7 @@ endif()
 
 # Example executable
 add_executable(memory_debug_example examples/memory_debug_example.cpp)
+add_executable(nanoflann_memory_watch_example examples/nanoflann_memory_watch_example.cpp)
 
 # Set compiler flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -38,6 +39,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(debug_containers_test PRIVATE -Wall -Wextra -O2)
     endif()
     target_compile_options(memory_debug_example PRIVATE -Wall -Wextra -O2)
+    target_compile_options(nanoflann_memory_watch_example PRIVATE -Wall -Wextra -O2)
 endif()
 
 # Install rules
@@ -59,3 +61,4 @@ if(GTest_FOUND)
     message(STATUS "    - debug_containers_test (Google Test)")
 endif()
 message(STATUS "    - memory_debug_example")
+message(STATUS "    - nanoflann_memory_watch_example")
