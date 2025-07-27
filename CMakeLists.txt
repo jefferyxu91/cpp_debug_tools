@@ -15,10 +15,21 @@ include_directories(include)
 include_directories(thirdparty/nanoflann/include)
 
 # Find GTest (optional)
+include(FetchContent)
+set(BUILD_GTEST OFF CACHE BOOL "")
 find_package(GTest QUIET)
+
 if(NOT GTest_FOUND)
-    message(WARNING "GTest not found. Tests will not be built.")
-    message(STATUS "To install GTest: sudo apt-get install libgtest-dev")
+    message(STATUS "GoogleTest not found locally. Fetching via FetchContent...")
+    FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    # targets GTest::gtest and GTest::gtest_main are provided by googletest project
+    set(GTest_FOUND ON)
 endif()
 
 # Find ROS if available (optional)
@@ -31,6 +42,10 @@ if(GTest_FOUND)
 
     add_executable(watcher_test test/nanoflann_watcher_test.cpp)
     target_link_libraries(watcher_test GTest::gtest GTest::gtest_main)
+
+    include(GoogleTest)
+    gtest_discover_tests(debug_containers_test)
+    gtest_discover_tests(watcher_test)
 endif()
 
 # Example executable

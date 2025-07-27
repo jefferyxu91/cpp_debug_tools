@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include <memory/nanoflann_memory_watcher.hpp>
 #include <atomic>
 #include <vector>
 #include <thread>
 #include <chrono>
 #include <nanoflann.hpp>
+#include <memory/nanoflann_memory_watcher.hpp>
 
 // Helper point cloud for nanoflann tests
 struct PointCloud {
