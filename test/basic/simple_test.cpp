@@ -1,4 +1,4 @@
-#include <memory/container_debug/simple_debug_containers.hpp>
+#include <memory/container_debug/debug_containers.hpp>
 #include <iostream>
 
 void test_function_1() {
