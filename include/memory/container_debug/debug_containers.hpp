@@ -16,9 +16,9 @@
 #include <cstddef>
 #include <functional>
 
-// Macro to capture caller's file and line
+// Macro to capture caller's file, line, and function
 #define DEBUG_CONTAINER_ALLOC(size) \
-    Debug::print_allocation_info(size, __FILE__, __LINE__)
+    Debug::print_allocation_info(size, __FILE__, __LINE__, __FUNCTION__)
 
 namespace Debug {
 
@@ -34,11 +34,12 @@ inline std::function<void(const std::string&)> output_stream = [](const std::str
 };
 
 // Utility function to print allocation info
-inline void print_allocation_info(size_t size, const char* file, int line) {
+inline void print_allocation_info(size_t size, const char* file, int line, const char* function) {
     if (size > memory_threshold) {
         std::string message = "[DEBUG] Large allocation detected: " + 
                              std::to_string(size) + " bytes at " + 
-                             std::string(file) + ":" + std::to_string(line);
+                             std::string(file) + ":" + std::to_string(line) + 
+                             " in function '" + std::string(function) + "'";
         output_stream(message);
     }
 }
@@ -93,7 +94,7 @@ public:
 
     T* allocate(size_type n) {
         size_t total_size = n * sizeof(T);
-        print_allocation_info(total_size, __FILE__, __LINE__);
+        print_allocation_info(total_size, __FILE__, __LINE__, __FUNCTION__);
         return std::allocator<T>{}.allocate(n);
     }
 

@@ -201,6 +201,19 @@ test_file_line/fast:
 .PHONY : test_file_line/fast
 
 #=============================================================================
+# Target rules for targets named test_function_name
+
+# Build rule for target.
+test_function_name: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_function_name
+.PHONY : test_function_name
+
+# fast build rule for target.
+test_function_name/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_function_name.dir/build.make CMakeFiles/test_function_name.dir/build
+.PHONY : test_function_name/fast
+
+#=============================================================================
 # Target rules for targets named test_constructor
 
 # Build rule for target.
@@ -286,6 +299,30 @@ test/basic/file_line_test.s: test/basic/file_line_test.cpp.s
 test/basic/file_line_test.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_file_line.dir/build.make CMakeFiles/test_file_line.dir/test/basic/file_line_test.cpp.s
 .PHONY : test/basic/file_line_test.cpp.s
+
+test/basic/function_name_test.o: test/basic/function_name_test.cpp.o
+.PHONY : test/basic/function_name_test.o
+
+# target to build an object file
+test/basic/function_name_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_function_name.dir/build.make CMakeFiles/test_function_name.dir/test/basic/function_name_test.cpp.o
+.PHONY : test/basic/function_name_test.cpp.o
+
+test/basic/function_name_test.i: test/basic/function_name_test.cpp.i
+.PHONY : test/basic/function_name_test.i
+
+# target to preprocess a source file
+test/basic/function_name_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_function_name.dir/build.make CMakeFiles/test_function_name.dir/test/basic/function_name_test.cpp.i
+.PHONY : test/basic/function_name_test.cpp.i
+
+test/basic/function_name_test.s: test/basic/function_name_test.cpp.s
+.PHONY : test/basic/function_name_test.s
+
+# target to generate assembly for a file
+test/basic/function_name_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_function_name.dir/build.make CMakeFiles/test_function_name.dir/test/basic/function_name_test.cpp.s
+.PHONY : test/basic/function_name_test.cpp.s
 
 test/basic/simple_test.o: test/basic/simple_test.cpp.o
 .PHONY : test/basic/simple_test.o
@@ -400,6 +437,7 @@ help:
 	@echo "... test_constructor"
 	@echo "... test_file_line"
 	@echo "... test_final"
+	@echo "... test_function_name"
 	@echo "... test_simple"
 	@echo "... test/basic/example.o"
 	@echo "... test/basic/example.i"
@@ -407,6 +445,9 @@ help:
 	@echo "... test/basic/file_line_test.o"
 	@echo "... test/basic/file_line_test.i"
 	@echo "... test/basic/file_line_test.s"
+	@echo "... test/basic/function_name_test.o"
+	@echo "... test/basic/function_name_test.i"
+	@echo "... test/basic/function_name_test.s"
 	@echo "... test/basic/simple_test.o"
 	@echo "... test/basic/simple_test.i"
 	@echo "... test/basic/simple_test.s"
